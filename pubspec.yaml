@@ -18,7 +18,7 @@ dependencies:
   riverpod: ^2.3.6
 
   # HTTP Requests
-  http: ^1.1.0
+  http: ^1.6.0
   dio: ^5.3.2
 
   # Local Storage

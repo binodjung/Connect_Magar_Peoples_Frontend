@@ -1,19 +1,27 @@
 import 'package:flutter/material.dart';
-import '../utils/colors.dart';
+import '../../../../core/utils/colors.dart';
+import '../../login/infrastructure/repository/auth_service.dart';
+import '../../login/presentation/login_screen.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
-  const OTPVerificationScreen({Key? key}) : super(key: key);
+  final String email; // Pass email to confirm which user to verify
+  const OTPVerificationScreen({Key? key, required this.email}) : super(key: key);
 
   @override
   State<OTPVerificationScreen> createState() => _OTPVerificationScreenState();
 }
 
 class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
+  // Changed to 6 controllers for 6-digit OTP
   final List<TextEditingController> _otpControllers = List.generate(
-    4,
+    6,
     (index) => TextEditingController(),
   );
-  final List<FocusNode> _focusNodes = List.generate(4, (index) => FocusNode());
+  // Changed to 6 focus nodes
+  final List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
+  
+  final _authService = AuthService();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -26,8 +34,65 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     super.dispose();
   }
 
+  void _handleVerify() async {
+    String otp = _otpControllers.map((c) => c.text).join();
+    // Updated validation to check for 6 digits
+    if (otp.length != 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a valid 6-digit OTP'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await _authService.verifyEmail(widget.email, otp);
+      
+      if (!mounted) return;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email Verified Successfully! Login now.'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        (route) => false,
+      );
+      
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+         SnackBar(
+           content: Text(e.toString().replaceAll('Exception: ', '')),
+           backgroundColor: Colors.red,
+           behavior: SnackBarBehavior.floating,
+           margin: const EdgeInsets.all(16),
+           shape: RoundedRectangleBorder(
+             borderRadius: BorderRadius.circular(8),
+           ),
+         ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Calculate width to fit 6 boxes comfortably
+    final screenWidth = MediaQuery.of(context).size.width;
+    final boxSize = (screenWidth - 48 - (5 * 8)) / 6; // 48 padding, 5 spaces of 8 width
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -52,16 +117,17 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Enter the verification code that is sent on email',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+             Text(
+              'Enter the 6-digit verification code sent to ${widget.email}',
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
             ),
             const SizedBox(height: 40),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(4, (index) {
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(6, (index) {
                 return SizedBox(
-                  width: 60,
+                  width: boxSize, // Dynamic width
+                  height: boxSize * 1.2, // Maintain aspect ratio
                   child: TextField(
                     controller: _otpControllers[index],
                     focusNode: _focusNodes[index],
@@ -69,16 +135,17 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                     keyboardType: TextInputType.number,
                     maxLength: 1,
                     style: const TextStyle(
-                      fontSize: 24,
+                      fontSize: 20, // Slightly smaller font for 6 digits
                       fontWeight: FontWeight.bold,
                     ),
                     decoration: InputDecoration(
                       counterText: '',
+                      contentPadding: EdgeInsets.zero, // Center text vertically
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8), // Slightly tighter radius
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(
                           color: AppColors.primaryOrange,
                           width: 2,
@@ -86,7 +153,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                       ),
                     ),
                     onChanged: (value) {
-                      if (value.length == 1 && index < 3) {
+                      if (value.isNotEmpty && index < 5) {
                         _focusNodes[index + 1].requestFocus();
                       } else if (value.isEmpty && index > 0) {
                         _focusNodes[index - 1].requestFocus();
@@ -98,12 +165,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
             ),
             const SizedBox(height: 32),
             ElevatedButton(
-              onPressed: () {
-                String otp = _otpControllers.map((c) => c.text).join();
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text('Verifying OTP: $otp')));
-              },
+              onPressed: _isLoading ? null : _handleVerify,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryOrange,
                 minimumSize: const Size(double.infinity, 56),
@@ -111,7 +173,9 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text(
+              child: _isLoading 
+                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                : const Text(
                 'Verify',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),

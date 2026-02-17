@@ -1,0 +1,98 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../../../../../core/constants/api_constants.dart';
+
+class AuthService {
+  Future<Map<String, dynamic>> login(String username, String password) async {
+    final response = await http.post(
+      Uri.parse(ApiConstants.login),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'username': username, 'password': password}),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception(_parseErrorMessage(response.body));
+    }
+  }
+
+  Future<Map<String, dynamic>> register({
+    required String username,
+    required String fullName,
+    required String email,
+    required String mobileNumber,
+    required String password,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConstants.register),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'username': username,
+          'full_name': fullName,
+          'email': email,
+          'mobile_number': mobileNumber,
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception(_parseErrorMessage(response.body));
+      }
+    } catch (e) {
+      throw Exception(e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
+  Future<Map<String, dynamic>> verifyEmail(String email, String otp) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConstants.verifyEmail),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'otp': otp}),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception(_parseErrorMessage(response.body));
+      }
+    } catch (e) {
+      throw Exception(e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+  
+  String _parseErrorMessage(String responseBody) {
+    try {
+      final decoded = jsonDecode(responseBody);
+      
+      // Handle List responses (e.g. ["Invalid OTP"])
+      if (decoded is List) {
+        return decoded.join('\n');
+      }
+
+      if (decoded is Map<String, dynamic>) {
+        if (decoded.containsKey('message')) {
+          return decoded['message'];
+        }
+        if (decoded.containsKey('error')) {
+          return decoded['error'];
+        }
+        if (decoded.containsKey('non_field_errors')) {
+          return (decoded['non_field_errors'] as List).join(', ');
+        }
+        // Fallback for other Django error formats
+        final firstKey = decoded.keys.first;
+        final firstValue = decoded[firstKey];
+        if (firstValue is List) return firstValue.first.toString();
+        return firstValue.toString();
+      }
+      return 'An unknown error occurred';
+    } catch (_) {
+      return 'Failed to process server response';
+    }
+  }
+}

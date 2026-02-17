@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../utils/colors.dart';
-import '../widgets/custom_text_field.dart';
+import '../../../../core/utils/colors.dart';
+import '../../../../core/widgets/custom_text_field.dart';
 import 'reset_password_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {

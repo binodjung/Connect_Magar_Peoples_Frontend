@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../utils/colors.dart';
-import 'login_email_screen.dart';
+import '../../../../core/utils/colors.dart';
+import '../../login/presentation/login_screen.dart';
 
 class EmailVerificationScreen extends StatelessWidget {
   const EmailVerificationScreen({Key? key}) : super(key: key);
@@ -45,7 +45,7 @@ class EmailVerificationScreen extends StatelessWidget {
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const LoginEmailScreen(),
+                    builder: (context) => const LoginScreen(),
                   ),
                   (route) => false,
                 );
