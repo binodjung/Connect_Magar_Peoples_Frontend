@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../utils/colors.dart';
-import '../widgets/custom_text_field.dart';
-import 'login_email_screen.dart';
+import '../../../../core/utils/colors.dart';
+import '../../../../core/widgets/custom_text_field.dart';
+import 'login_screen.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({Key? key}) : super(key: key);
@@ -80,7 +80,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const LoginEmailScreen(),
+                      builder: (context) => const LoginScreen(),
                     ),
                     (route) => false,
                   );

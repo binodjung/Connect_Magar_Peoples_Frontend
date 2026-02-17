@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../utils/colors.dart';
-import 'signup_screen.dart';
-import 'login_email_screen.dart';
+import '../../../../core/utils/colors.dart';
+import '../../sign_up/presentation/sign_up_screen.dart';
+import 'login_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({Key? key}) : super(key: key);
@@ -66,7 +66,7 @@ class WelcomeScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const LoginEmailScreen(),
+                        builder: (context) => const LoginScreen(),
                       ),
                     );
                   },
