@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../../core/constants/api_constants.dart';
 
 class AuthService {
@@ -11,7 +12,31 @@ class AuthService {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final data = jsonDecode(response.body);
+      print('Login Response: $data'); // Debug print
+      
+      final String? accessToken = data['tokens']?['access'];
+      final String? refreshToken = data['tokens']?['refresh'];
+
+      if (accessToken == null || refreshToken == null) {
+         // Fallback if structure is different
+         final String? altAccess = data['access'];
+         final String? altRefresh = data['refresh'];
+         
+         if (altAccess != null) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('access_token', altAccess);
+            if (altRefresh != null) await prefs.setString('refresh_token', altRefresh);
+            return data;
+         }
+         
+         throw Exception('Invalid response structure: Missing tokens');
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('access_token', accessToken);
+      await prefs.setString('refresh_token', refreshToken);
+      return data;
     } else {
       throw Exception(_parseErrorMessage(response.body));
     }

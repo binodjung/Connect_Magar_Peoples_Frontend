@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/utils/colors.dart';
 import '../../sign_up/presentation/sign_up_screen.dart';
 import 'login_screen.dart';
+import '../../../home/presentation/home_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({Key? key}) : super(key: key);
@@ -81,6 +82,26 @@ class WelcomeScreen extends StatelessWidget {
                   child: const Text(
                     'Login',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () {
+                    // Navigate to Home as Guest
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HomeScreen(
+                          username: 'Guest', 
+                          email: '', 
+                          isGuest: true
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    'Continue as Guest',
+                    style: TextStyle(color: Colors.white, fontSize: 16, decoration: TextDecoration.underline),
                   ),
                 ),
               ],

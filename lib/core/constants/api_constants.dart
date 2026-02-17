@@ -3,9 +3,12 @@ class ApiConstants {
   // static const String baseUrl = 'http://10.0.2.2:8000/api'; 
   
   // Use 192.168.1.7 for Physical Device (same Wi-Fi)
-  static const String baseUrl = 'http://192.168.1.7:8000/api/auth'; 
+  // Use 192.168.1.7 for Physical Device (same Wi-Fi)
+  static const String baseUrl = 'http://192.168.1.7:8000/api'; 
   
-  static const String login = '$baseUrl/login/';
-  static const String register = '$baseUrl/register/';
-  static const String verifyEmail = '$baseUrl/verify-email/';
+  static const String login = '$baseUrl/auth/login/';
+  static const String register = '$baseUrl/auth/register/';
+  static const String verifyEmail = '$baseUrl/auth/verify-email/';
+  static const String blogPosts = '$baseUrl/blog/posts'; // Removed trailing slash
+  static const String blogComments = '$baseUrl/blog/comments/';
 }
