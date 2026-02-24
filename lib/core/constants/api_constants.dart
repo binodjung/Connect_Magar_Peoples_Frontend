@@ -3,7 +3,7 @@ class ApiConstants {
   // static const String baseUrl = 'http://10.0.2.2:8000/api';
 
   // Use your PC's IP for Physical Device (same Wi-Fi)
-  static const String baseUrl = 'http://192.168.1.6:8000/api';
+  static const String baseUrl = 'http://192.168.1.3:8000/api';
 
   // Auth
   static const String login = '$baseUrl/auth/login/';
@@ -14,5 +14,7 @@ class ApiConstants {
   static const String blogPosts = '$baseUrl/blog/posts';
   static const String blogComments = '$baseUrl/blog/comments/';
   static const String likedPosts = '$baseUrl/blog/posts/liked/';
+  // Dictionary
   static const String bookmarkedPosts = '$baseUrl/blog/posts/bookmarked/';
+  static const String dictionaryWords = '$baseUrl/dictionary/words/';
 }
