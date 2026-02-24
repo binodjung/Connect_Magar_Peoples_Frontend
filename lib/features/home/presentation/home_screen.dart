@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../authentication/login/presentation/login_screen.dart'; // For logout if needed
+import 'package:flutter/services.dart';
+import '../../authentication/login/presentation/login_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../blog/presentation/blog_list_screen.dart';
 
@@ -9,8 +10,8 @@ class HomeScreen extends StatefulWidget {
   final bool isGuest;
 
   const HomeScreen({
-    Key? key, 
-    required this.username, 
+    Key? key,
+    required this.username,
     required this.email,
     this.isGuest = false,
   }) : super(key: key);
@@ -58,10 +59,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              // Navigate to Login/Welcome
-              Navigator.pushReplacement(
-                context, 
-                MaterialPageRoute(builder: (context) => const LoginScreen())
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+                (route) => false,
               );
             },
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF8B0000)),
@@ -72,20 +73,69 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ── Exit confirmation dialog ──────────────────────────────────────────────
+  Future<bool> _showExitDialog() async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Exit App?',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: const Text('Are you sure you want to exit the app?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF8B0000),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Exit', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        selectedItemColor: const Color(0xFF8B0000), 
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline), label: 'Blog'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
+    // PopScope intercepts the Android hardware back button.
+    // canPop: false means we handle it ourselves (only on HomeScreen).
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        // If we're not on the home tab, go back to home tab first
+        if (_selectedIndex != 0) {
+          setState(() => _selectedIndex = 0);
+          return;
+        }
+        // On home tab — show exit confirmation
+        final shouldExit = await _showExitDialog();
+        if (shouldExit) {
+          SystemNavigator.pop(); // Exits the app
+        }
+      },
+      child: Scaffold(
+        body: _pages[_selectedIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          selectedItemColor: const Color(0xFF8B0000),
+          unselectedItemColor: Colors.grey,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+            BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline), label: 'Blog'),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          ],
+        ),
       ),
     );
   }
@@ -99,7 +149,6 @@ class _HomeContent extends StatelessWidget {
 
   void _handleRestrictedAction(BuildContext context, VoidCallback action) {
     if (isGuest) {
-      // Find the parent state to show dialog
       final homeState = context.findAncestorStateOfType<_HomeScreenState>();
       homeState?._showLoginDialog();
     } else {
@@ -109,11 +158,9 @@ class _HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ... no change to AppBar ...
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        // ... same app bar code ...
         backgroundColor: Colors.white,
         elevation: 0,
         leading: Builder(
@@ -122,13 +169,13 @@ class _HomeContent extends StatelessWidget {
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
-        title: Column(
+        title: const Column(
           children: [
-            const Text(
+            Text(
               'मगर समुदाय',
               style: TextStyle(color: Color(0xFF8B0000), fontWeight: FontWeight.bold, fontSize: 18),
             ),
-            const Text(
+            Text(
               'Connect Magar People',
               style: TextStyle(color: Color(0xFF8B0000), fontSize: 12),
             ),
@@ -140,7 +187,7 @@ class _HomeContent extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // ... Banner Card Same ...
+            // Banner Card
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
@@ -151,7 +198,7 @@ class _HomeContent extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   const Text(
+                  const Text(
                     'Learn Magar\nLanguage',
                     style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
                   ),
@@ -164,7 +211,7 @@ class _HomeContent extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.2),
+                      backgroundColor: Colors.white.withValues(alpha: 0.2),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                       elevation: 0,
                     ),
@@ -176,12 +223,12 @@ class _HomeContent extends StatelessWidget {
                         Icon(Icons.arrow_forward, color: Colors.white, size: 16),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Grid
             GridView.count(
               shrinkWrap: true,
@@ -193,16 +240,17 @@ class _HomeContent extends StatelessWidget {
                 _buildGridItem(Icons.history, 'History', Colors.brown),
                 _buildGridItem(Icons.quiz, 'Quiz', Colors.brown),
                 _buildGridItem(Icons.book, 'Dictionary', Colors.blue, onTap: () {
-                   _handleRestrictedAction(context, () {
-                     // Navigate to Dictionary (Future)
-                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Dictionary coming soon!')));
-                   });
+                  _handleRestrictedAction(context, () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Dictionary coming soon!')),
+                    );
+                  });
                 }),
                 _buildGridItem(Icons.article, 'Blog', Colors.brown, onTap: () {
-                   _handleRestrictedAction(context, () {
-                      final homeState = context.findAncestorStateOfType<_HomeScreenState>();
-                      homeState?._onItemTapped(1);
-                   });
+                  _handleRestrictedAction(context, () {
+                    final homeState = context.findAncestorStateOfType<_HomeScreenState>();
+                    homeState?._onItemTapped(1);
+                  });
                 }),
                 _buildGridItem(Icons.text_fields, 'Lipi Letterbook', Colors.brown),
                 _buildGridItem(Icons.feedback, 'Feedback', Colors.brown),
@@ -214,7 +262,6 @@ class _HomeContent extends StatelessWidget {
     );
   }
 
-
   Widget _buildGridItem(IconData icon, String label, Color color, {VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap,
@@ -223,7 +270,11 @@ class _HomeContent extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
-            BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 5)),
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
           ],
         ),
         child: Column(

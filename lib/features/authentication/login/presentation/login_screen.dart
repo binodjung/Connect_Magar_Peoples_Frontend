@@ -4,7 +4,6 @@ import '../../../../core/widgets/custom_text_field.dart';
 import '../../sign_up/presentation/sign_up_screen.dart';
 import 'forgot_password_screen.dart';
 import '../infrastructure/repository/auth_service.dart';
-import '../../../profile/presentation/profile_screen.dart';
 import '../../../home/presentation/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -48,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
       
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (context) => HomeScreen(
@@ -56,6 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
             email: response['user']['email'] ?? '',
           ),
         ),
+        (route) => false, // Remove ALL previous routes
       );
       
     } catch (e) {

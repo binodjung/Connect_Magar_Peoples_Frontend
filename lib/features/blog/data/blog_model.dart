@@ -9,6 +9,7 @@ class BlogPost {
   final DateTime createdAt;
   final int likesCount;
   final bool isLiked;
+  final bool isBookmarked;
   final List<BlogComment> comments;
 
   BlogPost({
@@ -22,6 +23,7 @@ class BlogPost {
     required this.createdAt,
     required this.likesCount,
     required this.isLiked,
+    this.isBookmarked = false,
     this.comments = const [],
   });
 
@@ -37,6 +39,7 @@ class BlogPost {
       createdAt: DateTime.parse(json['created_at']),
       likesCount: json['likes_count'],
       isLiked: json['is_liked'] ?? false,
+      isBookmarked: json['is_bookmarked'] ?? false,
       comments: (json['comments'] as List<dynamic>?)
               ?.map((e) => BlogComment.fromJson(e))
               .toList() ??
@@ -62,7 +65,7 @@ class BlogComment {
     return BlogComment(
       id: json['id'],
       content: json['content'],
-      authorName: json['user']['full_name'], // Nested user object
+      authorName: json['user']['full_name'],
       createdAt: DateTime.parse(json['created_at']),
     );
   }
