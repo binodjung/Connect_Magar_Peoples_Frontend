@@ -21,6 +21,9 @@ dependencies:
   http: ^1.6.0
   dio: ^5.3.2
 
+  # Image caching
+  cached_network_image: ^3.4.1
+
   # Local Storage
   shared_preferences: ^2.2.0
 
