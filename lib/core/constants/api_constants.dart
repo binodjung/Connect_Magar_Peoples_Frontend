@@ -3,7 +3,7 @@ class ApiConstants {
   // static const String baseUrl = 'http://10.0.2.2:8000/api';
 
   // Use your PC's IP for Physical Device (same Wi-Fi)
-  static const String baseUrl = 'http://192.168.1.3:8000/api';
+  static const String baseUrl = 'http://192.168.1.9:8000/api';
 
   // Auth
   static const String login = '$baseUrl/auth/login/';
