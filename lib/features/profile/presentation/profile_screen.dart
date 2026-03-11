@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../authentication/login/presentation/login_screen.dart';
 import '../../../core/utils/colors.dart';
 import '../../blog/presentation/liked_posts_screen.dart';
@@ -14,7 +15,11 @@ class ProfileScreen extends StatelessWidget {
     required this.email,
   }) : super(key: key);
 
-  void _logout(BuildContext context) {
+  Future<void> _logout(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Wipe everything (tokens, user info)
+    
+    if (!context.mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const LoginScreen()),

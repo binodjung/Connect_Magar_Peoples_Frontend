@@ -19,14 +19,14 @@ class DictionaryResult {
 class DictionaryService {
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('auth_token');
+    return prefs.getString('access_token');
   }
 
   Future<Map<String, String>> _headers() async {
     final token = await _getToken();
     return {
       'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Token $token',
+      if (token != null) 'Authorization': 'Bearer $token',
     };
   }
 

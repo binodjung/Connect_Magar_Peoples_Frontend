@@ -11,7 +11,7 @@ class ApiConstants {
   static const String verifyEmail = '$baseUrl/auth/verify-email/';
 
   // Blog
-  static const String blogPosts = '$baseUrl/blog/posts';
+  static const String blogPosts = '$baseUrl/blog/posts/';
   static const String blogComments = '$baseUrl/blog/comments/';
   static const String likedPosts = '$baseUrl/blog/posts/liked/';
   // Dictionary

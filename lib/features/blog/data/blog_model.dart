@@ -52,12 +52,14 @@ class BlogComment {
   final int id;
   final String content;
   final String authorName;
+  final String authorUsername;
   final DateTime createdAt;
 
   BlogComment({
     required this.id,
     required this.content,
     required this.authorName,
+    required this.authorUsername,
     required this.createdAt,
   });
 
@@ -66,6 +68,7 @@ class BlogComment {
       id: json['id'],
       content: json['content'],
       authorName: json['user']['full_name'],
+      authorUsername: json['user']['username'],
       createdAt: DateTime.parse(json['created_at']),
     );
   }

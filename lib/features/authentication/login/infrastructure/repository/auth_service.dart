@@ -27,6 +27,12 @@ class AuthService {
             final prefs = await SharedPreferences.getInstance();
             await prefs.setString('access_token', altAccess);
             if (altRefresh != null) await prefs.setString('refresh_token', altRefresh);
+            
+            // Save user info here as well
+            if (data['user'] != null) {
+              await prefs.setString('user_username', data['user']['username'] ?? '');
+              await prefs.setString('user_email', data['user']['email'] ?? '');
+            }
             return data;
          }
          
@@ -36,6 +42,13 @@ class AuthService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('access_token', accessToken);
       await prefs.setString('refresh_token', refreshToken);
+      
+      // Also store user info for persistence
+      if (data['user'] != null) {
+        await prefs.setString('user_username', data['user']['username'] ?? '');
+        await prefs.setString('user_email', data['user']['email'] ?? '');
+      }
+      
       return data;
     } else {
       throw Exception(_parseErrorMessage(response.body));
