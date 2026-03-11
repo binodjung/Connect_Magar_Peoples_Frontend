@@ -17,4 +17,6 @@ class ApiConstants {
   // Dictionary
   static const String bookmarkedPosts = '$baseUrl/blog/posts/bookmarked/';
   static const String dictionaryWords = '$baseUrl/dictionary/words/';
+  // History
+  static const String histories = '$baseUrl/history/histories/';
 }
