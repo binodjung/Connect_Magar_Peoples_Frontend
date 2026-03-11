@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../authentication/login/presentation/login_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../blog/presentation/blog_list_screen.dart';
+import '../../dictionary/presentation/dictionary_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String username;
@@ -239,12 +240,13 @@ class _HomeContent extends StatelessWidget {
               children: [
                 _buildGridItem(Icons.history, 'History', Colors.brown),
                 _buildGridItem(Icons.quiz, 'Quiz', Colors.brown),
-                _buildGridItem(Icons.book, 'Dictionary', Colors.blue, onTap: () {
-                  _handleRestrictedAction(context, () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Dictionary coming soon!')),
-                    );
-                  });
+                _buildGridItem(Icons.book, 'Dictionary', const Color(0xFF8B0000), onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DictionaryScreen(),
+                    ),
+                  );
                 }),
                 _buildGridItem(Icons.article, 'Blog', Colors.brown, onTap: () {
                   _handleRestrictedAction(context, () {
