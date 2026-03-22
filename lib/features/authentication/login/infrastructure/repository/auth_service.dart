@@ -1,15 +1,17 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../../core/constants/api_constants.dart';
 
 class AuthService {
   Future<Map<String, dynamic>> login(String username, String password) async {
-    final response = await http.post(
-      Uri.parse(ApiConstants.login),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'username': username, 'password': password}),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConstants.login),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'username': username, 'password': password}),
+      ).timeout(const Duration(seconds: 10));
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -50,8 +52,14 @@ class AuthService {
       }
       
       return data;
-    } else {
-      throw Exception(_parseErrorMessage(response.body));
+      } else {
+        throw Exception(_parseErrorMessage(response.body));
+      }
+    } catch (e) {
+      if (e is TimeoutException) {
+        throw Exception('Connection Timeout: Please check if the server is running and reachable at ${ApiConstants.baseUrl}');
+      }
+      throw Exception('Connection Error: ${e.toString()}');
     }
   }
 
@@ -73,7 +81,7 @@ class AuthService {
           'mobile_number': mobileNumber,
           'password': password,
         }),
-      );
+      ).timeout(const Duration(seconds: 15)); // Slightly longer for registration if email sending is slow
 
       if (response.statusCode == 201) {
         return jsonDecode(response.body);
@@ -81,6 +89,9 @@ class AuthService {
         throw Exception(_parseErrorMessage(response.body));
       }
     } catch (e) {
+      if (e is TimeoutException) {
+        throw Exception('Connection Timeout: The server took too long to respond. Please check the backend logs.');
+      }
       throw Exception(e.toString().replaceAll('Exception: ', ''));
     }
   }
@@ -91,7 +102,7 @@ class AuthService {
         Uri.parse(ApiConstants.verifyEmail),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'otp': otp}),
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -99,6 +110,9 @@ class AuthService {
         throw Exception(_parseErrorMessage(response.body));
       }
     } catch (e) {
+      if (e is TimeoutException) {
+        throw Exception('Verification timeout. Please try again.');
+      }
       throw Exception(e.toString().replaceAll('Exception: ', ''));
     }
   }
