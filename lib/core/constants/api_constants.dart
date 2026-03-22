@@ -20,4 +20,6 @@ class ApiConstants {
   static const String dictionaryWords = '$baseUrl/dictionary/words/';
   // History
   static const String histories = '$baseUrl/history/histories/';
+  // Feedback
+  static const String feedbackSubmit = '$baseUrl/feedback/submit/';
 }

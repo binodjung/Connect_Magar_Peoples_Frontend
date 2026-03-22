@@ -5,6 +5,7 @@ import '../../profile/presentation/profile_screen.dart';
 import '../../blog/presentation/blog_list_screen.dart';
 import '../../dictionary/presentation/dictionary_screen.dart';
 import '../../history/presentation/history_list_screen.dart';
+import '../../feedback/presentation/feedback_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String username;
@@ -263,7 +264,14 @@ class _HomeContent extends StatelessWidget {
                   });
                 }),
                 _buildGridItem(Icons.text_fields, 'Lipi Letterbook', Colors.brown),
-                _buildGridItem(Icons.feedback, 'Feedback', Colors.brown),
+                _buildGridItem(Icons.feedback, 'Feedback', Colors.brown, onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FeedbackScreen(),
+                    ),
+                  );
+                }),
               ],
             ),
           ],
