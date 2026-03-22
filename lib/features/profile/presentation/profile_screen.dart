@@ -4,8 +4,9 @@ import '../../authentication/login/presentation/login_screen.dart';
 import '../../../core/utils/colors.dart';
 import '../../blog/presentation/liked_posts_screen.dart';
 import '../../blog/presentation/bookmarked_posts_screen.dart';
+import 'update_profile_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   final String username;
   final String email;
 
@@ -14,6 +15,33 @@ class ProfileScreen extends StatelessWidget {
     required this.username,
     required this.email,
   }) : super(key: key);
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  late String _username;
+  late String _fullName = "";
+  late String _email;
+  late String _mobileNumber = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _username = widget.username;
+    _email = widget.email;
+    _loadUserInfo();
+  }
+
+  Future<void> _loadUserInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _username = prefs.getString('username') ?? _username;
+      _fullName = prefs.getString('full_name') ?? "";
+      _mobileNumber = prefs.getString('mobile_number') ?? "";
+    });
+  }
 
   Future<void> _logout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
@@ -27,6 +55,24 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _goToUpdateProfile() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => UpdateProfileScreen(
+          currentUsername: _username,
+          currentFullName: _fullName,
+          email: _email,
+          currentMobile: _mobileNumber,
+        ),
+      ),
+    );
+
+    if (result == true) {
+      _loadUserInfo(); // Refresh the profile info
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,6 +84,10 @@ class ProfileScreen extends StatelessWidget {
         automaticallyImplyLeading: false,
         iconTheme: const IconThemeData(color: Colors.black),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.edit, color: Colors.blue),
+            onPressed: _goToUpdateProfile,
+          ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.red),
             onPressed: () => _logout(context),
@@ -57,9 +107,17 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Profile info
-            _buildProfileItem(Icons.person_outline, 'Username', username),
+            _buildProfileItem(Icons.person_outline, 'Username', _username),
+            if (_fullName.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              _buildProfileItem(Icons.badge_outlined, 'Full Name', _fullName),
+            ],
             const SizedBox(height: 16),
-            _buildProfileItem(Icons.email_outlined, 'Email', email),
+            _buildProfileItem(Icons.email_outlined, 'Email', _email),
+            if (_mobileNumber.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              _buildProfileItem(Icons.phone_outlined, 'Mobile Number', _mobileNumber),
+            ],
 
             const SizedBox(height: 32),
 
@@ -75,6 +133,16 @@ class ProfileScreen extends StatelessWidget {
                   letterSpacing: 1.0,
                 ),
               ),
+            ),
+            const SizedBox(height: 12),
+
+            _buildActionTile(
+              context,
+              icon: Icons.edit_note_outlined,
+              iconColor: Colors.blue,
+              label: 'Update Profile',
+              subtitle: 'Change your personal details',
+              onTap: _goToUpdateProfile,
             ),
             const SizedBox(height: 12),
 

@@ -9,6 +9,7 @@ class ApiConstants {
   // Auth
   static const String login = '$baseUrl/auth/login/';
   static const String register = '$baseUrl/auth/register/';
+  static const String profile = '$baseUrl/auth/profile/';
   static const String verifyEmail = '$baseUrl/auth/verify-email/';
 
   // Blog
@@ -22,4 +23,6 @@ class ApiConstants {
   static const String histories = '$baseUrl/history/histories/';
   // Feedback
   static const String feedbackSubmit = '$baseUrl/feedback/submit/';
+  // Dictionary Translate
+  static const String dictionaryTranslate = '$baseUrl/dictionary/translate/';
 }

@@ -6,6 +6,8 @@ import '../../blog/presentation/blog_list_screen.dart';
 import '../../dictionary/presentation/dictionary_screen.dart';
 import '../../history/presentation/history_list_screen.dart';
 import '../../feedback/presentation/feedback_screen.dart';
+import '../../lipi_letterbook/presentation/lipi_letterbook_screen.dart';
+import '../../dictionary/presentation/translation_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String username;
@@ -33,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _pages = [
       _HomeContent(username: widget.username, isGuest: widget.isGuest),
-      const BlogListScreen(),
+      const TranslationScreen(),
       ProfileScreen(username: widget.username, email: widget.email),
     ];
   }
@@ -135,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
           unselectedItemColor: Colors.grey,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline), label: 'Blog'),
+            BottomNavigationBarItem(icon: Icon(Icons.translate), label: 'Translate'),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
           ],
         ),
@@ -166,11 +168,9 @@ class _HomeContent extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu, color: Color(0xFF8B0000)),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: Image.asset('Images/logo.png', height: 40, width: 40),
         ),
         title: const Column(
           children: [
@@ -212,7 +212,14 @@ class _HomeContent extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const DictionaryScreen(),
+                        ),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white.withValues(alpha: 0.2),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
@@ -263,7 +270,14 @@ class _HomeContent extends StatelessWidget {
                     homeState?._onItemTapped(1);
                   });
                 }),
-                _buildGridItem(Icons.text_fields, 'Lipi Letterbook', Colors.brown),
+                _buildGridItem(Icons.text_fields, 'Akkha Magar Lipi', Colors.brown, onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LipiLetterbookScreen(),
+                    ),
+                  );
+                }),
                 _buildGridItem(Icons.feedback, 'Feedback', Colors.brown, onTap: () {
                   Navigator.push(
                     context,
