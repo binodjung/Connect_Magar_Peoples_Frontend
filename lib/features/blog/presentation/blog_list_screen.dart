@@ -121,30 +121,42 @@ class _BlogListScreenState extends State<BlogListScreen> {
 
     // Guard: ignore if a like request for this post is already in-flight
     if (_likingPostIds.contains(post.id)) return;
+    
+    // Save current state for rollback
+    final bool wasLiked = post.isLiked;
+    final int originalCount = post.likesCount;
+    
     setState(() => _likingPostIds.add(post.id));
 
     // Optimistic update
-    final newIsLiked = !post.isLiked;
-    final newLikesCount = post.likesCount + (newIsLiked ? 1 : -1);
+    final newIsLiked = !wasLiked;
+    final newLikesCount = newIsLiked ? originalCount + 1 : originalCount - 1;
     final updatedPost = _rebuildPost(post, isLiked: newIsLiked, likesCount: newLikesCount);
     _updatePostInLists(post.id, updatedPost);
 
     try {
       final result = await _blogService.likePost(post.id);
-      final success = result['success'] as bool;
-      final serverIsLiked = result['isLiked'] as bool;
+      final bool success = result['success'] ?? false;
+      final bool serverIsLiked = result['isLiked'] ?? newIsLiked;
+      final int? serverTotalLikes = result['total_likes'];
 
-      if (!success && mounted) {
+      if (success && mounted) {
+        // Sync with server's actual state
+        final syncedPost = _rebuildPost(post, 
+          isLiked: serverIsLiked, 
+          likesCount: serverTotalLikes ?? newLikesCount
+        );
+        _updatePostInLists(post.id, syncedPost);
+      } else {
+        throw Exception('Failed');
+      }
+    } catch (e) {
+      if (mounted) {
         // Revert on failure
-        final revertedPost = _rebuildPost(post, isLiked: post.isLiked, likesCount: post.likesCount);
+        final revertedPost = _rebuildPost(post, isLiked: wasLiked, likesCount: originalCount);
         _updatePostInLists(post.id, revertedPost);
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Failed to update like. Please try again.')));
-      } else if (success && mounted) {
-        // Sync with server's actual state
-        final serverCount = post.likesCount + (serverIsLiked ? 1 : 0);
-        final syncedPost = _rebuildPost(post, isLiked: serverIsLiked, likesCount: serverCount);
-        _updatePostInLists(post.id, syncedPost);
       }
     } finally {
       if (mounted) setState(() => _likingPostIds.remove(post.id));
@@ -489,30 +501,11 @@ class _BlogListScreenState extends State<BlogListScreen> {
                   // Bottom row: author + date + like
                   Row(
                     children: [
-                      // Author avatar
-                      CircleAvatar(
-                        backgroundColor: const Color(0xFF8B0000),
-                        radius: 16,
-                        child: Text(
-                          post.authorName.isNotEmpty ? post.authorName[0].toUpperCase() : '?',
-                          style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      // Author name + date
+                      // Date only (classic style)
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              post.authorName,
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                            ),
-                            Text(
-                              _formatDate(post.createdAt),
-                              style: TextStyle(fontSize: 11, color: Colors.grey[500]),
-                            ),
-                          ],
+                        child: Text(
+                          _formatDate(post.createdAt),
+                          style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                         ),
                       ),
                       // ── Like Button (tappable) ────────────────────────

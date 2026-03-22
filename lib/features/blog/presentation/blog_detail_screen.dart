@@ -50,42 +50,48 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
   // ── Like toggle ─────────────────────────────────────────────────────────
   Future<void> _toggleLike() async {
     if (_isLiking) return; // Guard: ignore rapid taps
+    
+    // Save current state for potential rollback
+    final bool wasLiked = _isLiked;
+    final int originalCount = _likesCount;
+    
     setState(() => _isLiking = true);
 
     // Optimistic UI update
     setState(() {
-      _isLiked = !_isLiked;
-      _likesCount += _isLiked ? 1 : -1;
+      _isLiked = !wasLiked;
+      _likesCount = _isLiked ? originalCount + 1 : originalCount - 1;
     });
 
     try {
       final result = await _blogService.likePost(widget.post.id);
-      final success = result['success'] as bool;
-      final serverIsLiked = result['isLiked'] as bool;
+      final bool success = result['success'] ?? false;
+      final bool serverIsLiked = result['isLiked'] ?? _isLiked;
+      final int? serverTotalLikes = result['total_likes'];
 
       if (!success) {
-        if (!mounted) return;
+        throw Exception('Server failed');
+      }
+
+      if (mounted) {
+        setState(() {
+          _isLiked = serverIsLiked;
+          if (serverTotalLikes != null) {
+            _likesCount = serverTotalLikes;
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
         // Revert on failure
         setState(() {
-          _isLiked = !_isLiked;
-          _likesCount += _isLiked ? 1 : -1;
+          _isLiked = wasLiked;
+          _likesCount = originalCount;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to update like. Try again.')),
         );
-      } else {
-        if (!mounted) return;
-        setState(() {
-          _isLiked = serverIsLiked;
-          _likesCount = widget.post.likesCount + (serverIsLiked ? 1 : 0);
-        });
       }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isLiked = !_isLiked;
-        _likesCount += _isLiked ? 1 : -1;
-      });
     } finally {
       if (mounted) setState(() => _isLiking = false);
     }
@@ -192,32 +198,11 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
                   // ── Author row + like/comment buttons ─────────────────
                   Row(
                     children: [
-                      CircleAvatar(
-                        backgroundColor: const Color(0xFF8B0000),
-                        radius: 22,
-                        child: Text(
-                          widget.post.authorName.isNotEmpty
-                              ? widget.post.authorName[0].toUpperCase()
-                              : '?',
-                          style: const TextStyle(color: Colors.white, fontSize: 18),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.post.authorName,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              '${widget.post.category} · ${_formatDate(widget.post.createdAt)}',
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                            ),
-                          ],
+                        child: Text(
+                          '${widget.post.category} · ${_formatDate(widget.post.createdAt)}',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500),
                         ),
                       ),
                       const SizedBox(width: 8),

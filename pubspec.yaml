@@ -33,6 +33,11 @@ dependencies:
   # OTP Input
   pinput: ^3.0.1
 
+  # PDF Generation
+  pdf: ^3.10.8
+  printing: ^5.11.1
+  path_provider: ^2.1.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

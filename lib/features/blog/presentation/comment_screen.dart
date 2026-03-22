@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../data/blog_model.dart';
 import '../data/blog_service.dart';
 
@@ -21,12 +22,21 @@ class _CommentScreenState extends State<CommentScreen> {
   bool _hasMore = true;
   int _currentPage = 1;
   bool _isSending = false;
+  String? _currentUserUsername;
 
   @override
   void initState() {
     super.initState();
+    _loadCurrentUser();
     _fetchComments();
     _scrollController.addListener(_onScroll);
+  }
+
+  Future<void> _loadCurrentUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _currentUserUsername = prefs.getString('user_username');
+    });
   }
 
   @override
@@ -100,12 +110,56 @@ class _CommentScreenState extends State<CommentScreen> {
             curve: Curves.easeOut,
           );
         }
-        // No Toast Message as requested
       } 
     } catch (e) {
        if (!mounted) return;
        setState(() => _isSending = false);
        print("Error adding comment: $e");
+    }
+  }
+
+  Future<void> _deleteComment(int commentId, int index) async {
+    // Show confirmation dialog
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Comment'),
+        content: const Text('Are you sure you want to delete this comment?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final success = await _blogService.deleteComment(commentId);
+      if (success && mounted) {
+        setState(() {
+          _comments.removeAt(index);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Comment deleted')),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete comment')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
     }
   }
 
@@ -133,15 +187,17 @@ class _CommentScreenState extends State<CommentScreen> {
                         return const Center(child: CircularProgressIndicator());
                       }
                       final comment = _comments[index];
+                      final isOwner = _currentUserUsername != null && 
+                                      comment.authorUsername == _currentUserUsername;
+                                      
                       return Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           CircleAvatar(
-                            backgroundColor: Colors.grey[200],
-                            backgroundImage: null, // Add user image if available
+                            backgroundColor: const Color(0xFF8B0000).withOpacity(0.1),
                             child: Text(
                               comment.authorName.isNotEmpty ? comment.authorName[0].toUpperCase() : '?',
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF8B0000)),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -149,9 +205,21 @@ class _CommentScreenState extends State<CommentScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  comment.authorName,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      comment.authorName,
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                    ),
+                                    if (isOwner)
+                                      IconButton(
+                                        icon: const Icon(Icons.delete_outline, size: 18, color: Colors.grey),
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                        onPressed: () => _deleteComment(comment.id, index),
+                                      ),
+                                  ],
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
@@ -222,7 +290,6 @@ class _CommentScreenState extends State<CommentScreen> {
   }
 
   String _formatDate(DateTime date) {
-    // Simple helper or utilize intl package if available
     return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
   }
 }

@@ -1,9 +1,10 @@
 class ApiConstants {
-  // Use 10.0.2.2 for Android Emulator
-  // static const String baseUrl = 'http://10.0.2.2:8000/api';
-
-  // Use your PC's IP for Physical Device (same Wi-Fi)
-  static const String baseUrl = 'http://192.168.1.9:8000/api';
+  // 1. Android Emulator: Use 10.0.2.2
+  // 2. Physical device: Use your PC's IP (e.g., 192.168.1.7)
+  // 3. IMPORTANT: Run backend with: python manage.py runserver 0.0.0.0:8000
+  
+  static const String baseUrl = 'http://192.168.1.7:8000/api'; 
+  // static const String baseUrl = 'http://10.0.2.2:8000/api'; // Uncomment for Emulator
 
   // Auth
   static const String login = '$baseUrl/auth/login/';
@@ -11,10 +12,12 @@ class ApiConstants {
   static const String verifyEmail = '$baseUrl/auth/verify-email/';
 
   // Blog
-  static const String blogPosts = '$baseUrl/blog/posts';
+  static const String blogPosts = '$baseUrl/blog/posts/';
   static const String blogComments = '$baseUrl/blog/comments/';
   static const String likedPosts = '$baseUrl/blog/posts/liked/';
   // Dictionary
   static const String bookmarkedPosts = '$baseUrl/blog/posts/bookmarked/';
   static const String dictionaryWords = '$baseUrl/dictionary/words/';
+  // History
+  static const String histories = '$baseUrl/history/histories/';
 }

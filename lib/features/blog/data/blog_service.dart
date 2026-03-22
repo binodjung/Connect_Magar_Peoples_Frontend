@@ -17,7 +17,7 @@ class BlogService {
 
   // ── Fetch paginated blog posts ────────────────────────────────────────────
   Future<Map<String, dynamic>> fetchPosts({int page = 1}) async {
-    final url = '${ApiConstants.blogPosts}/?page=$page';
+    final url = '${ApiConstants.blogPosts}?page=$page';
     print('Fetching Posts URL: $url');
 
     try {
@@ -55,7 +55,7 @@ class BlogService {
 
   // ── Fetch single post detail ──────────────────────────────────────────────
   Future<BlogPost> fetchPostDetails(int id) async {
-    final url = '${ApiConstants.blogPosts}/$id/';
+    final url = '${ApiConstants.blogPosts}$id/';
     print('Fetch Detail URL: $url');
 
     try {
@@ -145,7 +145,7 @@ class BlogService {
 
   // ── Add a comment ─────────────────────────────────────────────────────────
   Future<BlogComment?> addComment(int postId, String content) async {
-    final url = '${ApiConstants.blogPosts}/$postId/comment/';
+    final url = '${ApiConstants.blogPosts}$postId/comment/';
     print('Add Comment URL: $url');
 
     try {
@@ -169,10 +169,9 @@ class BlogService {
   }
 
   // ── Like toggle ───────────────────────────────────────────────────────────
-  /// Returns { 'success': bool, 'isLiked': bool }
-  /// 201 → liked, 200 → unliked
+  /// Returns server response with success, isLiked, total_likes
   Future<Map<String, dynamic>> likePost(int postId) async {
-    final url = '${ApiConstants.blogPosts}/$postId/like/';
+    final url = '${ApiConstants.blogPosts}$postId/like/';
     print('Like URL: $url');
 
     try {
@@ -182,25 +181,23 @@ class BlogService {
       );
 
       print('Like Status: ${response.statusCode}');
+      print('Like Body: ${response.body}');
 
-      if (response.statusCode == 201) {
-        return {'success': true, 'isLiked': true};
-      } else if (response.statusCode == 200) {
-        return {'success': true, 'isLiked': false};
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body);
       } else {
-        return {'success': false, 'isLiked': false};
+        return {'success': false};
       }
     } catch (e) {
       print('Like Exception: $e');
-      return {'success': false, 'isLiked': false};
+      return {'success': false};
     }
   }
 
   // ── Bookmark toggle ───────────────────────────────────────────────────────
-  /// Returns { 'success': bool, 'isBookmarked': bool }
-  /// 201 → bookmarked, 200 → unbookmarked
+  /// Returns server response with success, isBookmarked
   Future<Map<String, dynamic>> bookmarkPost(int postId) async {
-    final url = '${ApiConstants.blogPosts}/$postId/bookmark/';
+    final url = '${ApiConstants.blogPosts}$postId/bookmark/';
     print('Bookmark URL: $url');
 
     try {
@@ -210,17 +207,16 @@ class BlogService {
       );
 
       print('Bookmark Status: ${response.statusCode}');
+      print('Bookmark Body: ${response.body}');
 
-      if (response.statusCode == 201) {
-        return {'success': true, 'isBookmarked': true};
-      } else if (response.statusCode == 200) {
-        return {'success': true, 'isBookmarked': false};
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body);
       } else {
-        return {'success': false, 'isBookmarked': false};
+        return {'success': false};
       }
     } catch (e) {
       print('Bookmark Exception: $e');
-      return {'success': false, 'isBookmarked': false};
+      return {'success': false};
     }
   }
 
@@ -258,6 +254,26 @@ class BlogService {
     } catch (e) {
       print('Fetch Comments Exception: $e');
       rethrow;
+    }
+  }
+
+  // ── Delete a comment ──────────────────────────────────────────────────────
+  Future<bool> deleteComment(int commentId) async {
+    final url = '${ApiConstants.blogComments}$commentId/';
+    print('Delete Comment URL: $url');
+
+    try {
+      final response = await http.delete(
+        Uri.parse(url),
+        headers: await _authHeaders(),
+      );
+
+      print('Delete Comment Status: ${response.statusCode}');
+
+      return response.statusCode == 204;
+    } catch (e) {
+      print('Delete Comment Exception: $e');
+      return false;
     }
   }
 }

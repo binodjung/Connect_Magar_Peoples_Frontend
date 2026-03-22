@@ -4,6 +4,7 @@ import '../../authentication/login/presentation/login_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../blog/presentation/blog_list_screen.dart';
 import '../../dictionary/presentation/dictionary_screen.dart';
+import '../../history/presentation/history_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String username;
@@ -238,7 +239,14 @@ class _HomeContent extends StatelessWidget {
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
               children: [
-                _buildGridItem(Icons.history, 'History', Colors.brown),
+                _buildGridItem(Icons.history, 'History', Colors.brown, onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const HistoryListScreen(),
+                    ),
+                  );
+                }),
                 _buildGridItem(Icons.quiz, 'Quiz', Colors.brown),
                 _buildGridItem(Icons.book, 'Dictionary', const Color(0xFF8B0000), onTap: () {
                   Navigator.push(
