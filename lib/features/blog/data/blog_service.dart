@@ -6,13 +6,26 @@ import 'blog_model.dart';
 
 class BlogService {
   // ── Helper: get auth headers ─────────────────────────────────────────────
-  Future<Map<String, String>> _authHeaders() async {
+  Future<Map<String, String>> _authHeaders({bool forceToken = false}) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('access_token');
-    return {
+    
+    final headers = {
       'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
     };
+
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+    
+    return headers;
+  }
+
+  Future<void> _handleUnauthorized() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('access_token');
+    await prefs.remove('refresh_token');
+    print('Unauthorized: Tokens cleared from storage.');
   }
 
   // ── Fetch paginated blog posts ────────────────────────────────────────────
@@ -43,6 +56,22 @@ class BlogService {
           'posts': posts,
           'hasMore': data is Map && data['next'] != null,
         };
+      } else if (response.statusCode == 401) {
+        // Token might be invalid/expired. Clear it and retry as guest for public list.
+        await _handleUnauthorized();
+        final guestResponse = await http.get(
+          Uri.parse(url),
+          headers: {'Content-Type': 'application/json'},
+        );
+        if (guestResponse.statusCode == 200) {
+          final data = jsonDecode(guestResponse.body);
+          List<dynamic> results = (data is Map && data.containsKey('results')) ? data['results'] : data;
+          return {
+            'posts': results.map((item) => BlogPost.fromJson(item)).toList(),
+            'hasMore': data is Map && data['next'] != null,
+          };
+        }
+        throw Exception('Failed to load blogs: ${guestResponse.statusCode}');
       } else {
         print('Error Body: ${response.body}');
         throw Exception('Failed to load blogs: ${response.statusCode}');
@@ -119,7 +148,7 @@ class BlogService {
       final response = await http.get(
         Uri.parse(url),
         headers: await _authHeaders(),
-      );
+      ).timeout(const Duration(seconds: 8));
 
       print('Bookmarked Posts Status: ${response.statusCode}');
 
@@ -153,7 +182,7 @@ class BlogService {
         Uri.parse(url),
         headers: await _authHeaders(),
         body: jsonEncode({'content': content}),
-      );
+      ).timeout(const Duration(seconds: 8));
 
       print('Add Comment Status: ${response.statusCode}');
       print('Add Comment Body: ${response.body}');
@@ -266,7 +295,7 @@ class BlogService {
       final response = await http.delete(
         Uri.parse(url),
         headers: await _authHeaders(),
-      );
+      ).timeout(const Duration(seconds: 8));
 
       print('Delete Comment Status: ${response.statusCode}');
 

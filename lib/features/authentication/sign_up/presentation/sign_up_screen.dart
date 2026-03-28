@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../core/utils/colors.dart';
-import '../../../../core/widgets/custom_text_field.dart';
-import '../../verification/presentation/otp_verification_screen.dart';
 import '../../login/infrastructure/repository/auth_service.dart';
+import '../../verification/presentation/otp_verification_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -19,36 +17,31 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   
-  bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
-
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
   final _authService = AuthService();
   bool _isLoading = false;
 
+  final Color maroonPrimary = const Color(0xFF801520);
+  final Color maroonSubtle = const Color(0xFFB85E66);
+  final Color inputGrey = const Color(0xFFF0EDED);
+
   void _handleSignUp() async {
-     if (_nameController.text.isEmpty || 
-         _emailController.text.isEmpty || 
-         _passwordController.text.isEmpty || 
-         _usernameController.text.isEmpty || 
-         _mobileController.text.isEmpty ||
-         _confirmPasswordController.text.isEmpty) {
-       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill all fields'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
+    if (_nameController.text.isEmpty || 
+        _usernameController.text.isEmpty || 
+        _mobileController.text.isEmpty || 
+        _emailController.text.isEmpty || 
+        _passwordController.text.isEmpty || 
+        _confirmPasswordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all fields')),
       );
       return;
     }
 
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Passwords do not match'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
+        const SnackBar(content: Text('Passwords do not match')),
       );
       return;
     }
@@ -67,12 +60,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (!mounted) return;
       
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Registration Successful! Please check email for OTP.'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(16),
-        ),
+        const SnackBar(content: Text('Registration Successful! Please check email.'), backgroundColor: Colors.green),
       );
       
       Navigator.push(
@@ -85,12 +73,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString().replaceAll('Exception: ', '')),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(16),
-        ),
+        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -100,10 +83,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
     _usernameController.dispose();
     _mobileController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
@@ -113,119 +96,123 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.close, color: Colors.black),
           onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Create an account',
-          style: TextStyle(color: Colors.black),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Sign Up',
+            const SizedBox(height: 24),
+            Text(
+              'Create an account',
               style: TextStyle(
-                fontSize: 28,
+                fontSize: 32,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: maroonPrimary,
               ),
             ),
             const SizedBox(height: 32),
-            CustomTextField(
-              controller: _nameController,
-              labelText: 'Full Name',
-              hintText: 'Binod Thapa',
-            ),
-            const SizedBox(height: 20),
-            CustomTextField(
-              controller: _usernameController,
-              labelText: 'Username',
-              hintText: 'binod123',
-            ),
-             const SizedBox(height: 20),
-            CustomTextField(
-              controller: _mobileController,
-              labelText: 'Mobile Number',
-              hintText: '9800000000',
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 20),
-            CustomTextField(
-              controller: _emailController,
-              labelText: 'Email Address',
-              hintText: 'bnod@gmail.com',
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 20),
-            CustomTextField(
-              controller: _passwordController,
-              labelText: 'Password',
-              hintText: '••••••••••••',
-              obscureText: _obscurePassword,
-              suffixIcon: IconButton(
-                icon: Icon(
-                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.grey,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _obscurePassword = !_obscurePassword;
-                  });
-                },
-              ),
-            ),
-            const SizedBox(height: 20),
-            CustomTextField(
-              controller: _confirmPasswordController,
-              labelText: 'Confirm Password',
-              hintText: '••••••••••••',
-              obscureText: _obscureConfirmPassword,
-              suffixIcon: IconButton(
-                icon: Icon(
-                  _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.grey,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _obscureConfirmPassword = !_obscureConfirmPassword;
-                  });
-                },
-              ),
+            
+            _buildLabel('Full Name'),
+            _buildTextField(_nameController, 'Enter your full name'),
+            const SizedBox(height: 16),
+            
+            _buildLabel('Username'),
+            _buildTextField(_usernameController, 'Enter a username'),
+            const SizedBox(height: 16),
+            
+            _buildLabel('Mobile Number'),
+            _buildTextField(_mobileController, 'Enter mobile number', keyboardType: TextInputType.phone),
+            const SizedBox(height: 16),
+            
+            _buildLabel('Email Address'),
+            _buildTextField(_emailController, 'Enter email address', keyboardType: TextInputType.emailAddress),
+            const SizedBox(height: 16),
+            
+            _buildLabel('Password'),
+            _buildTextField(
+              _passwordController, 
+              'Enter password', 
+              isPassword: true, 
+              isVisible: _isPasswordVisible,
+              onToggleVisible: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'By continuing, you agree to our terms of service.',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+            
+            _buildLabel('Confirm Password'),
+            _buildTextField(
+              _confirmPasswordController, 
+              'Confirm password', 
+              isPassword: true, 
+              isVisible: _isConfirmPasswordVisible,
+              onToggleVisible: () => setState(() => _isConfirmPasswordVisible = !_isConfirmPasswordVisible),
             ),
+            
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _handleSignUp,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryOrange,
-                minimumSize: const Size(double.infinity, 56),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 20, 
-                      width: 20, 
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                    )
-                  : const Text(
-                'Sign Up',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Center(
+              child: Text(
+                'By continuing, you agree to our terms of service.',
+                style: TextStyle(color: maroonSubtle, fontSize: 13),
               ),
             ),
+            const SizedBox(height: 32),
+            
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _handleSignUp,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: maroonPrimary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: _isLoading
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : const Text('Sign Up', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+              ),
+            ),
+            const SizedBox(height: 48),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: maroonPrimary),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String hint, {bool isPassword = false, bool isVisible = false, VoidCallback? onToggleVisible, TextInputType? keyboardType}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: inputGrey,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: isPassword && !isVisible,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: maroonSubtle.withOpacity(0.5)),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          suffixIcon: isPassword ? IconButton(
+            icon: Icon(isVisible ? Icons.visibility : Icons.visibility_off, color: maroonSubtle),
+            onPressed: onToggleVisible,
+          ) : null,
         ),
       ),
     );

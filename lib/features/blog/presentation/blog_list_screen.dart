@@ -205,7 +205,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
         ),
         backgroundColor: Colors.white,
         elevation: 0,
-        automaticallyImplyLeading: false, // No back button - embedded in bottom nav
+        automaticallyImplyLeading: true,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Divider(height: 1, color: Colors.grey[200]),

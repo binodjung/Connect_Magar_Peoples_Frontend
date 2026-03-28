@@ -69,14 +69,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.picture_as_pdf_outlined, color: maroonColor),
-            onPressed: () async {
-              if (_history != null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Generating PDF Report...'), backgroundColor: maroonColor),
-                );
-                await HistoryPdfService.generateAndDownloadPdf(_history!);
-              }
-            },
+            onPressed: () => _downloadPdf(),
             tooltip: 'Download PDF',
           ),
           const SizedBox(width: 8),
@@ -97,6 +90,30 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                       },
                     ),
     );
+  }
+
+  Future<void> _downloadPdf() async {
+    const maroonColor = Color(0xFF8B0000);
+    if (_history != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Record is downloading in pdf...'),
+          backgroundColor: maroonColor,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      await HistoryPdfService.generateAndDownloadPdf(_history!);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Record is downloaded in pdf'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildClassicSection(HistorySectionModel section, int sectionNumber) {
