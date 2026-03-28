@@ -43,6 +43,17 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "Images/logo.png"
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - Images/Akkha lipi.png
+    - Images/logo.png
+    - Images/welcome_namaste.png

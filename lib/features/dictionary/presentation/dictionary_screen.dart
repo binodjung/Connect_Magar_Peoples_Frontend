@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../data/word_model.dart';
 import '../data/dictionary_service.dart';
@@ -22,6 +23,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
   int _currentPage = 1;
   String _searchQuery = '';
   String _activeLetter = '';
+  Timer? _debounce;
 
   // All letters A-Z for the filter chips
   static const List<String> _letters = [
@@ -38,17 +40,22 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
 
   @override
   void dispose() {
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     _scrollController.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
   void _onSearchChanged() {
-    final q = _searchController.text.trim().toLowerCase();
-    if (q == _searchQuery) return;
-    _searchQuery = q;
-    _activeLetter = '';       // clear letter filter when typing
-    _loadWords(reset: true);
+    if (_searchController.text == _searchQuery) return;
+    
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      _searchQuery = _searchController.text;
+      _activeLetter = '';       // clear letter filter when typing
+      _loadWords(reset: true);
+    });
   }
 
   void _onLetterTap(String letter) {
@@ -302,7 +309,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),

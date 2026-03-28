@@ -47,7 +47,7 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
         title: const Text(
-          'मगर इतिहास (History)',
+          'Magar History',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
