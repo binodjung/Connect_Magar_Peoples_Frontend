@@ -173,7 +173,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               ),
               child: TextField(
                 controller: _messageController,
-                maxLines: 6,
+                maxLines: 2,
                 decoration: const InputDecoration(
                   hintText: 'Tell us what\'s on your mind...',
                   border: InputBorder.none,
@@ -182,35 +182,44 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               ),
             ),
             
-            const SizedBox(height: 32),
-            
-            // Submit Button
-            SizedBox(
-              width: double.infinity,
-              height: 56,
+            const SizedBox(height: 40), // Extra space at bottom to ensure scrolling doesn't block text
+          ],
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 24.0, left: 24, right: 24),
+          child: Center(
+            heightFactor: 1.0,
+            child: SizedBox(
+              width: 180, // Made button small as requested
+              height: 48,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _submitFeedback,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: maroonColor,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(24), // More rounded and attractive
                   ),
-                  elevation: 2,
+                  elevation: 4,
                 ),
                 child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      )
                     : const Text(
                         'Submit Feedback',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
               ),
             ),
-            const SizedBox(height: 40),
-          ],
+          ),
         ),
       ),
     );

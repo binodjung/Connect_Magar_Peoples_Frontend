@@ -69,7 +69,7 @@ class WelcomeScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
                     
                     // PAGINATION DOTS
                     Row(
@@ -83,7 +83,6 @@ class WelcomeScreen extends StatelessWidget {
                     const Spacer(),
                     
                     // ACTION BUTTONS
-                    const SizedBox(height: 48),
                     SizedBox(
                       width: double.infinity,
                       height: 58,
@@ -110,7 +109,7 @@ class WelcomeScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     TextButton(
                       onPressed: () {
                         Navigator.push(
@@ -129,7 +128,6 @@ class WelcomeScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
                     TextButton(
                       onPressed: () {
                         Navigator.pushReplacement(
@@ -148,7 +146,7 @@ class WelcomeScreen extends StatelessWidget {
                         style: TextStyle(color: Colors.grey, fontSize: 13, decoration: TextDecoration.underline),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),

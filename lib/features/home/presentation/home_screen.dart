@@ -9,6 +9,7 @@ import '../../feedback/presentation/feedback_screen.dart';
 import '../../lipi_letterbook/presentation/lipi_letterbook_screen.dart';
 import '../../dictionary/presentation/dictionary_screen.dart';
 import '../../dictionary/presentation/translation_screen.dart';
+import '../../quiz/presentation/quiz_selection_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String username;
@@ -214,12 +215,14 @@ class _HomeContent extends StatelessWidget {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DictionaryScreen(),
-                        ),
-                      );
+                      _handleRestrictedAction(context, () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const DictionaryScreen(),
+                          ),
+                        );
+                      });
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white.withOpacity(0.2),
@@ -249,21 +252,34 @@ class _HomeContent extends StatelessWidget {
               mainAxisSpacing: 16,
               children: [
                 _buildGridItem(Icons.history, 'Magar History', Colors.brown, onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const HistoryListScreen(),
-                    ),
-                  );
+                  _handleRestrictedAction(context, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HistoryListScreen(),
+                      ),
+                    );
+                  });
                 }),
-                _buildGridItem(Icons.quiz, 'Quiz', Colors.brown),
+                _buildGridItem(Icons.quiz, 'Quiz', Colors.brown, onTap: () {
+                  _handleRestrictedAction(context, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const QuizSelectionScreen(),
+                      ),
+                    );
+                  });
+                }),
                 _buildGridItem(Icons.book, 'Dictionary', const Color(0xFF8B0000), onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const DictionaryScreen(),
-                    ),
-                  );
+                  _handleRestrictedAction(context, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const DictionaryScreen(),
+                      ),
+                    );
+                  });
                 }),
                 _buildGridItem(Icons.article, 'Blog', Colors.brown, onTap: () {
                   _handleRestrictedAction(context, () {
@@ -276,20 +292,24 @@ class _HomeContent extends StatelessWidget {
                   });
                 }),
                 _buildGridItem(Icons.text_fields, 'Akkha Magar Lipi', Colors.brown, onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const LipiLetterbookScreen(),
-                    ),
-                  );
+                  _handleRestrictedAction(context, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LipiLetterbookScreen(),
+                      ),
+                    );
+                  });
                 }),
                 _buildGridItem(Icons.feedback, 'Feedback', Colors.brown, onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const FeedbackScreen(),
-                    ),
-                  );
+                  _handleRestrictedAction(context, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const FeedbackScreen(),
+                      ),
+                    );
+                  });
                 }),
               ],
             ),

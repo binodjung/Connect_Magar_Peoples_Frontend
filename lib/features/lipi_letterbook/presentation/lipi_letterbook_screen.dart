@@ -1,122 +1,276 @@
 import 'package:flutter/material.dart';
 
-class LipiLetterbookScreen extends StatelessWidget {
-  const LipiLetterbookScreen({Key? key}) : super(key: key);
+class LipiLetterbookScreen extends StatefulWidget {
+  const LipiLetterbookScreen({super.key});
 
-  final Color maroonColor = const Color(0xFF801520);
-  final Color creamColor = const Color(0xFFF5E6D3);
+  @override
+  State<LipiLetterbookScreen> createState() => _LipiLetterbookScreenState();
+}
+
+class _LipiLetterbookScreenState extends State<LipiLetterbookScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  final Color maroonColor = const Color(0xFF8B0000); // Updated to match other screens
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        title: const Text('Akkha Magar Lipi'),
         backgroundColor: maroonColor,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+        foregroundColor: Colors.white,
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          indicatorColor: Colors.white,
+          indicatorWeight: 3,
+          tabs: const [
+            Tab(text: 'Alphabets', icon: Icon(Icons.sort_by_alpha)),
+            Tab(text: 'Numbers', icon: Icon(Icons.format_list_numbered)),
+            Tab(text: 'Words', icon: Icon(Icons.menu_book)),
+          ],
         ),
-        title: const Text(
-          'Akkha Magar Lipi',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
       ),
-      body: Stack(
+      body: TabBarView(
+        controller: _tabController,
         children: [
-          // Maroon Background (top part)
-          Container(
-            height: MediaQuery.of(context).size.height * 0.4,
-            width: double.infinity,
-            color: maroonColor,
+          _buildImagePanel(
+            context,
+            'Images/Akkha lipi.png',
+            'Vowels & Consonants',
+            'Learn the foundational alphabets of the Magar language.',
           ),
-          
-          // Main Image Card
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 40),
+          _buildImagePanel(
+            context,
+            'Images/number script (1).png',
+            'Numbers Script',
+            'Learn how to write numbers in Magar Lipi.',
+          ),
+          _buildWordsGrid(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImagePanel(BuildContext context, String imagePath, String title, String subtitle) {
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          decoration: BoxDecoration(
+            color: maroonColor.withOpacity(0.05),
+            border: Border(bottom: BorderSide(color: maroonColor.withOpacity(0.1))),
+          ),
+          child: Column(
+            children: [
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: maroonColor,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 14, color: Colors.black54),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: SafeArea(
+            bottom: true,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24.0, 16.0, 24.0, 32.0),
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 24),
-                padding: const EdgeInsets.all(16),
+                width: double.infinity,
                 decoration: BoxDecoration(
-                  color: creamColor,
-                  borderRadius: BorderRadius.circular(24),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.grey.withOpacity(0.3),
                       blurRadius: 15,
-                      offset: const Offset(0, 8),
+                      offset: const Offset(0, 5),
                     ),
                   ],
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Magar Lipi: Vowels and Consonants',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: maroonColor.withOpacity(0.9),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // The Script Image in a zoomable viewer
-                    Container(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 0.6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.shade300, width: 1.5),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: InteractiveViewer(
-                        panEnabled: true,
-                        minScale: 1.0,
-                        maxScale: 4.0,
-                        child: Image.asset(
-                          'Images/Akkha lipi.png',
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(40.0),
-                                child: Text(
-                                  'Magar Lipi Image not found.\nEnsure "Images/Akkha lipi.png" is in assets.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 20),
-                    
-                    // Instruction label
-                    Text(
-                      'Pinch to zoom or drag to explore the script',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontStyle: FontStyle.italic,
-                        color: maroonColor.withOpacity(0.6),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 16),
-                  ],
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.asset(
+                    imagePath,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => _buildErrorWidget(imagePath),
+                  ),
                 ),
               ),
             ),
           ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWordsGrid(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: maroonColor.withOpacity(0.05),
+            border: Border(bottom: BorderSide(color: maroonColor.withOpacity(0.1))),
+          ),
+          child: Column(
+            children: [
+              Text(
+                'Vocabulary Practice',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: maroonColor),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Explore basic words constructed with Akkha Lipi.',
+                style: TextStyle(fontSize: 14, color: Colors.black54),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: GridView.builder(
+            padding: const EdgeInsets.all(16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 1.0,
+            ),
+            itemCount: 14,
+            itemBuilder: (context, index) {
+              // file names are word1 akkha.png, word2 script.png, ... word14 script.png
+              String assetName = index == 0 ? 'Images/word1 akkha.png' : 'Images/word${index + 1} script.png';
+              
+              return GestureDetector(
+                onTap: () => _showFullScreenImage(context, assetName),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                    border: Border.all(color: maroonColor.withOpacity(0.2)),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Stack(
+                      children: [
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Image.asset(
+                              assetName,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) => Icon(Icons.image_not_supported, color: Colors.grey[400], size: 50),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            color: maroonColor.withOpacity(0.9),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'Word ${index + 1}',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showFullScreenImage(BuildContext context, String assetName) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: InteractiveViewer(
+                  maxScale: 5.0,
+                  child: Image.asset(assetName, fit: BoxFit.contain),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.black54, size: 30),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget(String path) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40.0),
+        child: Text(
+          'Image not found:\n$path',
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.red),
+        ),
       ),
     );
   }
