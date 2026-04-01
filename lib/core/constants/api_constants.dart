@@ -1,28 +1,32 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class ApiConstants {
   // 1. Android Emulator: Use 10.0.2.2
   // 2. Physical device: Use your PC's IP (e.g., 192.168.1.7)
   // 3. IMPORTANT: Run backend with: python manage.py runserver 0.0.0.0:8000
 
-  static const String baseUrl = 'http://100.64.214.7:8000/api'; // Corrected for Physical Phone and Local Wi-Fi
+  static String get baseUrl => dotenv.env['BASE_URL'] ?? 'http://192.168.18.116:8000/api';
   // static const String baseUrl = 'http://10.0.2.2:8000/api'; // Use for Android Emulator
 
   // Auth
-  static const String login = '$baseUrl/auth/login/';
-  static const String register = '$baseUrl/auth/register/';
-  static const String profile = '$baseUrl/auth/profile/';
-  static const String verifyEmail = '$baseUrl/auth/verify-email/';
+  static String get login => '$baseUrl/auth/login/';
+  static String get register => '$baseUrl/auth/register/';
+  static String get profile => '$baseUrl/auth/profile/';
+  static String get verifyEmail => '$baseUrl/auth/verify-email/';
 
   // Blog
-  static const String blogPosts = '$baseUrl/blog/posts/';
-  static const String blogComments = '$baseUrl/blog/comments/';
-  static const String likedPosts = '$baseUrl/blog/posts/liked/';
+  static String get blogPosts => '$baseUrl/blog/posts/';
+  static String get blogComments => '$baseUrl/blog/comments/';
+  static String get likedPosts => '$baseUrl/blog/posts/liked/';
   // Dictionary
-  static const String bookmarkedPosts = '$baseUrl/blog/posts/bookmarked/';
-  static const String dictionaryWords = '$baseUrl/dictionary/words/';
+  static String get bookmarkedPosts => '$baseUrl/blog/posts/bookmarked/';
+  static String get dictionaryWords => '$baseUrl/dictionary/words/';
   // History
-  static const String histories = '$baseUrl/history/histories/';
+  static String get histories => '$baseUrl/history/histories/';
   // Feedback
-  static const String feedbackSubmit = '$baseUrl/feedback/submit/';
+  static String get feedbackSubmit => '$baseUrl/feedback/submit/';
   // Dictionary Translate
-  static const String dictionaryTranslate = '$baseUrl/dictionary/translate/';
+  static String get dictionaryTranslate => '$baseUrl/dictionary/translate/';
+  // Quiz
+  static String get quizQuestions => '$baseUrl/quiz/questions/';
 }

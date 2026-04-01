@@ -140,7 +140,7 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -161,87 +161,164 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
           ),
         ],
       ),
-      extendBodyBehindAppBar: true,
+      // extendBodyBehindAppBar removed to keep layout clean and standard as requested
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Hero Image ────────────────────────────────────────────────
+            // ── Hero Image Container (Bordered like Content box) ──────────
             if (widget.post.image != null)
-              CachedNetworkImage(
-              imageUrl: widget.post.image!,
-              width: double.infinity,
-              height: 300,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
-                height: 300,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [Colors.grey[200]!, Colors.grey[100]!, Colors.grey[200]!],
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
+                child: Container(
+                  width: double.infinity,
+                  height: 220,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9), // Matching description box bg
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: const Color(0xFF1D4E7B), width: 1.5),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(2),
+                    child: CachedNetworkImage(
+                      imageUrl: widget.post.image!,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF1D4E7B)),
+                      ),
+                      errorWidget: (context, url, error) => const Icon(
+                        Icons.broken_image, 
+                        size: 40, 
+                        color: Colors.grey
+                      ),
+                    ),
                   ),
                 ),
               ),
-              errorWidget: (context, url, error) => Container(
-                height: 300,
-                color: Colors.grey[200],
-                child: const Icon(Icons.broken_image, size: 48, color: Colors.grey),
-              ),
-            ),
 
             Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Author row + like/comment buttons ─────────────────
+                  // ── Segmented Header (Image Style) ─────────────────────────
                   Row(
                     children: [
-                      Expanded(
-                        child: Text(
-                          '${widget.post.category} · ${_formatDate(widget.post.createdAt)}',
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500),
+                      // Red Segment
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFC00000),
+                          borderRadius: BorderRadius.only(topLeft: Radius.circular(4)),
+                        ),
+                        child: const Text(
+                          'POST',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'Arial',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      // Dark Blue Segment (Title)
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          color: const Color(0xFF1D4E7B),
+                          child: Text(
+                            widget.post.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'Arial',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Orange Segment (Comments Count)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFD35400),
+                          borderRadius: BorderRadius.only(topRight: Radius.circular(4)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.chat_bubble, color: Colors.white, size: 14),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${_comments.length}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontFamily: 'Arial',
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  // Subheading (Category & Date)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12.0, left: 12),
+                    child: Text(
+                      '${widget.post.category} | Written on ${_formatDate(widget.post.createdAt)}',
+                      style: TextStyle(
+                        fontFamily: 'Arial',
+                        fontSize: 13,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ),
 
-                      // Like button
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: Divider(color: Color(0xFF1D4E7B), thickness: 1.5),
+                  ),
+
+                  // ── Action Buttons Row (Likes) ──────────────────────────
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
                       GestureDetector(
                         onTap: _toggleLike,
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: _isLiked
-                                ? Colors.red.withValues(alpha: 0.08)
-                                : Colors.grey[100],
-                            borderRadius: BorderRadius.circular(20),
+                            color: _isLiked ? Colors.red.withOpacity(0.1) : Colors.grey[100],
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: _isLiked ? Colors.red : Colors.grey[300]!),
                           ),
                           child: Row(
                             children: [
-                              AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 200),
-                                child: Icon(
-                                  _isLiked ? Icons.favorite : Icons.favorite_border,
-                                  key: ValueKey(_isLiked),
-                                  color: Colors.red,
-                                  size: 20,
-                                ),
+                              Icon(
+                                _isLiked ? Icons.favorite : Icons.favorite_border,
+                                color: Colors.red,
+                                size: 16,
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                '$_likesCount',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                '$_likesCount likes',
+                                style: const TextStyle(
+                                  fontFamily: 'Arial',
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
                         ),
                       ),
-
                       const SizedBox(width: 10),
-
-                      // Comment button
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
@@ -254,18 +331,18 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.blue.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: const Color(0xFF1D4E7B)),
                           ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.chat_bubble_outline, color: Colors.black54, size: 20),
-                              const SizedBox(width: 6),
-                              Text(
-                                '${_comments.length}',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ],
+                          child: const Text(
+                            'View Comment',
+                            style: TextStyle(
+                              fontFamily: 'Arial',
+                              fontSize: 12,
+                              color: Color(0xFF1D4E7B),
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
@@ -274,44 +351,72 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Category badge
+                  // ── Description Header ──────────────────────────────────
+                  const Text(
+                    'Content Description',
+                    style: TextStyle(
+                      fontFamily: 'Arial',
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFC00000),
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // ── Content Container (Styled like the Blue Code Box) ────
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE8A323).withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(20),
+                      color: const Color(0xFFF1F5F9), // Light blue-ish grey
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: const Color(0xFF1D4E7B), width: 1.5),
                     ),
                     child: Text(
-                      widget.post.category.toUpperCase(),
+                      widget.post.description,
                       style: const TextStyle(
-                        color: Color(0xFFE8A323),
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
+                        fontFamily: 'Arial',
+                        fontSize: 12,
+                        height: 1.6,
+                        color: Color(0xFF333333),
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 24),
 
-                  // Title
-                  Text(
-                    widget.post.title,
-                    style: const TextStyle(
-                      fontSize: 26,
+                  // ── Secondary Info box (Green Style) ───────────────────
+                  const Text(
+                    'Summary',
+                    style: TextStyle(
+                      fontFamily: 'Arial',
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
-                      height: 1.3,
+                      color: Color(0xFF2E7D32),
                     ),
                   ),
-                  const SizedBox(height: 16),
-
-                  // Body
-                  Text(
-                    widget.post.description,
-                    style: TextStyle(fontSize: 16, height: 1.7, color: Colors.grey[800]),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0FDF4), // Light green
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: const Color(0xFF2E7D32), width: 1.5),
+                    ),
+                    child: Text(
+                      'This blog post specifically explores ${widget.post.category} trends. Read more for cultural insights and community updates.',
+                      style: const TextStyle(
+                        fontFamily: 'Arial',
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                        color: Color(0xFF1B5E20),
+                      ),
+                    ),
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 48),
                 ],
               ),
             ),

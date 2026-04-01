@@ -98,42 +98,40 @@ class _SignUpScreenState extends State<SignUpScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
+        title: Text(
+          'Create an account',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: maroonPrimary,
+          ),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 24),
-            Text(
-              'Create an account',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: maroonPrimary,
-              ),
-            ),
-            const SizedBox(height: 32),
-            
             _buildLabel('Full Name'),
             _buildTextField(_nameController, 'Enter your full name'),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             
             _buildLabel('Username'),
             _buildTextField(_usernameController, 'Enter a username'),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             
             _buildLabel('Mobile Number'),
             _buildTextField(_mobileController, 'Enter mobile number', keyboardType: TextInputType.phone),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             
             _buildLabel('Email Address'),
             _buildTextField(_emailController, 'Enter email address', keyboardType: TextInputType.emailAddress),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             
             _buildLabel('Password'),
             _buildTextField(
@@ -143,7 +141,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               isVisible: _isPasswordVisible,
               onToggleVisible: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             
             _buildLabel('Confirm Password'),
             _buildTextField(
@@ -158,14 +156,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
             Center(
               child: Text(
                 'By continuing, you agree to our terms of service.',
-                style: TextStyle(color: maroonSubtle, fontSize: 13),
+                style: TextStyle(color: maroonSubtle, fontSize: 12),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             
             SizedBox(
               width: double.infinity,
-              height: 56,
+              height: 50,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _handleSignUp,
                 style: ElevatedButton.styleFrom(
@@ -174,10 +172,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 child: _isLoading
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text('Sign Up', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                  : const Text('Sign Up', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
               ),
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -208,7 +206,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           hintText: hint,
           hintStyle: TextStyle(color: maroonSubtle.withOpacity(0.5)),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           suffixIcon: isPassword ? IconButton(
             icon: Icon(isVisible ? Icons.visibility : Icons.visibility_off, color: maroonSubtle),
             onPressed: onToggleVisible,
