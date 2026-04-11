@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import 'features/authentication/login/presentation/welcome_screen.dart';
 import 'features/home/presentation/home_screen.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'core/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('access_token');
   final username = prefs.getString('user_username');
   final email = prefs.getString('user_email');
 
-  runApp(MyApp(
-    isLoggedIn: token != null,
-    username: username,
-    email: email,
-  ));
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
+      child: MyApp(
+        isLoggedIn: token != null,
+        username: username,
+        email: email,
+      ),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -33,9 +38,35 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return MaterialApp(
       title: 'Magar Community App',
-      theme: ThemeData(primarySwatch: Colors.orange, fontFamily: 'Roboto'),
+      themeMode: themeProvider.themeMode,
+      theme: ThemeData(
+        brightness: Brightness.light,
+        primarySwatch: Colors.orange,
+        primaryColor: const Color(0xFF8B0000),
+        scaffoldBackgroundColor: Colors.white,
+        fontFamily: 'Roboto',
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          foregroundColor: Color(0xFF8B0000),
+          elevation: 0,
+        ),
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        primarySwatch: Colors.orange,
+        primaryColor: const Color(0xFF8B0000),
+        scaffoldBackgroundColor: const Color(0xFF121212),
+        fontFamily: 'Roboto',
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF121212),
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
+      ),
       home: isLoggedIn
           ? HomeScreen(
               username: username ?? 'User',

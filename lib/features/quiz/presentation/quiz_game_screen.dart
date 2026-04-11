@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/quiz_service.dart';
 import '../data/quiz_model.dart';
 import 'quiz_selection_screen.dart';
+import '../../../../core/utils/colors.dart';
 
 class QuizGameScreen extends StatefulWidget {
   final String category;
@@ -32,7 +33,15 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchRandomQuestions();
+    _loadQuiz();
+  }
+
+  Future<void> _loadQuiz() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    await _fetchRandomQuestions();
   }
 
   Future<void> _fetchRandomQuestions() async {
@@ -133,7 +142,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
                 ),
               );
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF8B0000)),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.darkMaroon),
             child: const Text('Play Again', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -172,10 +181,10 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: AppColors.lightGrey,
       appBar: AppBar(
         title: Text('${widget.categoryTitle} Quiz'),
-        backgroundColor: const Color(0xFF8B0000),
+        backgroundColor: AppColors.darkMaroon,
         foregroundColor: Colors.white,
         actions: [
           if (!_isLoading && _error == null && !_isSubmitted)
@@ -186,9 +195,36 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF8B0000)))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.darkMaroon))
           : _error != null
-              ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 16)))
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.cloud_off, size: 64, color: Colors.grey),
+                        const SizedBox(height: 16),
+                        Text(
+                          _error!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Colors.red, fontSize: 16),
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: _loadQuiz,
+                          icon: const Icon(Icons.refresh, color: Colors.white),
+                          label: const Text('Retry', style: TextStyle(color: Colors.white)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.darkMaroon,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
               : Column(
                   children: [
                     // Progress Bar
@@ -197,7 +233,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
                       child: LinearProgressIndicator(
                         value: (_currentQuestionIndex + 1) / _questions.length,
                         backgroundColor: Colors.grey[300],
-                        color: const Color(0xFF8B0000),
+                        color: AppColors.darkMaroon,
                         minHeight: 8,
                       ),
                     ),
@@ -219,8 +255,8 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
                                   _currentQuestionIndex++;
                                 });
                               },
-                              icon: const Icon(Icons.skip_next, color: Color(0xFF8B0000), size: 20),
-                              label: const Text('Skip', style: TextStyle(color: Color(0xFF8B0000), fontSize: 16, fontWeight: FontWeight.bold)),
+                              icon: const Icon(Icons.skip_next, color: AppColors.darkMaroon, size: 20),
+                              label: const Text('Skip', style: TextStyle(color: AppColors.darkMaroon, fontSize: 16, fontWeight: FontWeight.bold)),
                               iconAlignment: IconAlignment.end,
                             ),
                         ],
@@ -281,9 +317,9 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
                                           margin: const EdgeInsets.only(bottom: 16),
                                           padding: const EdgeInsets.all(16),
                                           decoration: BoxDecoration(
-                                            color: isSelected ? const Color(0xFF8B0000) : Colors.white,
+                                            color: isSelected ? AppColors.darkMaroon : Colors.white,
                                             border: Border.all(
-                                              color: isSelected ? const Color(0xFF8B0000) : Colors.grey[300]!,
+                                              color: isSelected ? AppColors.darkMaroon : Colors.grey[300]!,
                                               width: 2,
                                             ),
                                             borderRadius: BorderRadius.circular(12),
@@ -296,7 +332,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
                                                 child: Text(
                                                   String.fromCharCode(65 + i),
                                                   style: TextStyle(
-                                                    color: isSelected ? const Color(0xFF8B0000) : Colors.black87,
+                                                    color: isSelected ? AppColors.darkMaroon : Colors.black87,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
@@ -339,8 +375,8 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
                                     _currentQuestionIndex--;
                                   });
                                 },
-                                icon: const Icon(Icons.arrow_back, color: Color(0xFF8B0000)),
-                                label: const Text('Previous', style: TextStyle(color: Color(0xFF8B0000), fontWeight: FontWeight.bold)),
+                                 icon: const Icon(Icons.arrow_back, color: AppColors.darkMaroon),
+                                 label: const Text('Previous', style: TextStyle(color: AppColors.darkMaroon, fontWeight: FontWeight.bold)),
                               )
                             else
                               const SizedBox.shrink(),

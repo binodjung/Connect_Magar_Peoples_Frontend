@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import '../../../core/theme_provider.dart';
 import '../../authentication/login/presentation/login_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../blog/presentation/blog_list_screen.dart';
@@ -137,6 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: _onItemTapped,
           selectedItemColor: const Color(0xFF8B0000),
           unselectedItemColor: Colors.grey,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
             BottomNavigationBarItem(icon: Icon(Icons.translate), label: 'Translate'),
@@ -165,28 +168,48 @@ class _HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 16.0),
           child: Image.asset('Images/logo.png', height: 40, width: 40),
         ),
-        title: const Column(
+        title: Column(
           children: [
             Text(
               'मगर समुदाय',
-              style: TextStyle(color: Color(0xFF8B0000), fontWeight: FontWeight.bold, fontSize: 18),
+              style: TextStyle(
+                  color: isDark ? Colors.white : const Color(0xFF8B0000),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18),
             ),
             Text(
               'Connect Magar People',
-              style: TextStyle(color: Color(0xFF8B0000), fontSize: 12),
+              style: TextStyle(
+                  color: isDark ? Colors.grey[400] : const Color(0xFF8B0000),
+                  fontSize: 12),
             ),
           ],
         ),
         centerTitle: true,
+        actions: [
+          Switch(
+            value: isDark,
+            onChanged: (value) {
+              themeProvider.toggleTheme(value);
+            },
+            activeColor: const Color(0xFF8B0000),
+            inactiveThumbColor: Colors.orange,
+            inactiveTrackColor: Colors.orange.withOpacity(0.5),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -251,7 +274,7 @@ class _HomeContent extends StatelessWidget {
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
               children: [
-                _buildGridItem(Icons.history, 'Magar History', Colors.brown, onTap: () {
+                _buildGridItem(context, Icons.history, 'Magar History', Colors.brown, onTap: () {
                   _handleRestrictedAction(context, () {
                     Navigator.push(
                       context,
@@ -261,7 +284,7 @@ class _HomeContent extends StatelessWidget {
                     );
                   });
                 }),
-                _buildGridItem(Icons.quiz, 'Quiz', Colors.brown, onTap: () {
+                _buildGridItem(context, Icons.quiz, 'Quiz', Colors.brown, onTap: () {
                   _handleRestrictedAction(context, () {
                     Navigator.push(
                       context,
@@ -271,7 +294,7 @@ class _HomeContent extends StatelessWidget {
                     );
                   });
                 }),
-                _buildGridItem(Icons.book, 'Dictionary', const Color(0xFF8B0000), onTap: () {
+                _buildGridItem(context, Icons.book, 'Dictionary', const Color(0xFF8B0000), onTap: () {
                   _handleRestrictedAction(context, () {
                     Navigator.push(
                       context,
@@ -281,7 +304,7 @@ class _HomeContent extends StatelessWidget {
                     );
                   });
                 }),
-                _buildGridItem(Icons.article, 'Blog', Colors.brown, onTap: () {
+                _buildGridItem(context, Icons.article, 'Blog', Colors.brown, onTap: () {
                   _handleRestrictedAction(context, () {
                     Navigator.push(
                       context,
@@ -291,7 +314,7 @@ class _HomeContent extends StatelessWidget {
                     );
                   });
                 }),
-                _buildGridItem(Icons.text_fields, 'Akkha Magar Lipi', Colors.brown, onTap: () {
+                _buildGridItem(context, Icons.text_fields, 'Akkha Magar Lipi', Colors.brown, onTap: () {
                   _handleRestrictedAction(context, () {
                     Navigator.push(
                       context,
@@ -301,7 +324,7 @@ class _HomeContent extends StatelessWidget {
                     );
                   });
                 }),
-                _buildGridItem(Icons.feedback, 'Feedback', Colors.brown, onTap: () {
+                _buildGridItem(context, Icons.feedback, 'Feedback', Colors.brown, onTap: () {
                   _handleRestrictedAction(context, () {
                     Navigator.push(
                       context,
@@ -319,16 +342,18 @@ class _HomeContent extends StatelessWidget {
     );
   }
 
-  Widget _buildGridItem(IconData icon, String label, Color color, {VoidCallback? onTap}) {
+  Widget _buildGridItem(BuildContext context, IconData icon, String label, Color color, {VoidCallback? onTap}) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.1),
+              color: isDark ? Colors.black.withOpacity(0.3) : Colors.grey.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
@@ -345,7 +370,11 @@ class _HomeContent extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               label,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: isDark ? Colors.white : Colors.black,
+              ),
             ),
           ],
         ),
