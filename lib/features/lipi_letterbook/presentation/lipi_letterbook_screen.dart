@@ -134,6 +134,12 @@ class _LipiLetterbookScreenState extends State<LipiLetterbookScreen> with Single
   }
 
   Widget _buildWordsGrid(BuildContext context) {
+    final List<String> wordLabels = [
+      'paaka', 'thuppa', 'ijjhat', 'ijjhata', 'birseyo',
+      'haraeyo', 'selayo', 'hidaleyo', 'pidaluu', 'gichhaeyo',
+      'biraloo karaune', 'hudeyaa', 'dieyako', 'gayo'
+    ];
+
     return Column(
       children: [
         Container(
@@ -159,7 +165,12 @@ class _LipiLetterbookScreenState extends State<LipiLetterbookScreen> with Single
         ),
         Expanded(
           child: GridView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 16,
+              bottom: MediaQuery.of(context).padding.bottom + 48,
+            ),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               crossAxisSpacing: 16,
@@ -206,11 +217,25 @@ class _LipiLetterbookScreenState extends State<LipiLetterbookScreen> with Single
                           right: 0,
                           child: Container(
                             color: maroonColor.withOpacity(0.9),
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Text(
-                              'Word ${index + 1}',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    wordLabels[index],
+                                    textAlign: TextAlign.center,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.open_in_full,
+                                  color: Colors.white70,
+                                  size: 14,
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -236,6 +261,8 @@ class _LipiLetterbookScreenState extends State<LipiLetterbookScreen> with Single
           alignment: Alignment.center,
           children: [
             Container(
+              width: MediaQuery.of(context).size.width * 0.9,
+              height: MediaQuery.of(context).size.width * 0.9,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
@@ -244,7 +271,13 @@ class _LipiLetterbookScreenState extends State<LipiLetterbookScreen> with Single
                 borderRadius: BorderRadius.circular(16),
                 child: InteractiveViewer(
                   maxScale: 5.0,
-                  child: Image.asset(assetName, fit: BoxFit.contain),
+                  minScale: 1.0,
+                  child: Image.asset(
+                    assetName, 
+                    fit: BoxFit.contain, 
+                    width: double.infinity, 
+                    height: double.infinity,
+                  ),
                 ),
               ),
             ),

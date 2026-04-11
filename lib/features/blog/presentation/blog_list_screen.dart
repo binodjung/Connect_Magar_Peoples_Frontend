@@ -233,7 +233,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search posts, authors, categories...',
+                hintText: 'Search  posts by title or category',
                 hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
                 prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
                 suffixIcon: _searchQuery.isNotEmpty
