@@ -186,6 +186,8 @@ class _BlogListScreenState extends State<BlogListScreen> {
       createdAt: p.createdAt,
       likesCount: likesCount,
       isLiked: isLiked,
+      isBookmarked: p.isBookmarked,
+      allowDonation: p.allowDonation,
       comments: p.comments,
     );
   }
@@ -299,7 +301,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
                                 return _buildBlogCard(context, index);
                               },
                             ),
-                          ),
+          ),
           ),
         ],
       ),
@@ -552,6 +554,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
                           style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                         ),
                       ),
+
                       // ── Like Button (tappable) ────────────────────────
                       GestureDetector(
                         onTap: () => _toggleLike(index),

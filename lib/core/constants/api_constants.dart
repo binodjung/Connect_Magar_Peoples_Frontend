@@ -31,4 +31,9 @@ class ApiConstants {
   static String get dictionaryTranslate => '$baseUrl/dictionary/translate/';
   // Quiz
   static String get quizQuestions => '$baseUrl/quiz/questions/';
+
+  // eSewa Sandbox
+  static const String esewaMerchantCode = 'EPAYTEST';
+  static const String esewaSecretKey = '8gBm/:&EnhH.1/q';
+  static const String esewaUatUrl = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
 }

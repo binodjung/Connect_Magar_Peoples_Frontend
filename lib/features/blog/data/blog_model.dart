@@ -10,7 +10,10 @@ class BlogPost {
   final int likesCount;
   final bool isLiked;
   final bool isBookmarked;
+  final bool allowDonation;
+  final String totalDonations;
   final List<BlogComment> comments;
+  final List<BlogDonation> donations;
 
   BlogPost({
     required this.id,
@@ -24,7 +27,10 @@ class BlogPost {
     required this.likesCount,
     required this.isLiked,
     this.isBookmarked = false,
+    this.allowDonation = false,
+    this.totalDonations = '0',
     this.comments = const [],
+    this.donations = const [],
   });
 
   factory BlogPost.fromJson(Map<String, dynamic> json) {
@@ -40,8 +46,14 @@ class BlogPost {
       likesCount: json['likes_count'],
       isLiked: json['is_liked'] ?? false,
       isBookmarked: json['is_bookmarked'] ?? false,
+      allowDonation: json['allow_donation'] ?? false,
+      totalDonations: json['total_donations']?.toString() ?? '0',
       comments: (json['comments'] as List<dynamic>?)
               ?.map((e) => BlogComment.fromJson(e))
+              .toList() ??
+          [],
+      donations: (json['donations'] as List<dynamic>?)
+              ?.map((e) => BlogDonation.fromJson(e))
               .toList() ??
           [],
     );
@@ -69,6 +81,35 @@ class BlogComment {
       content: json['content'],
       authorName: json['user']['full_name'],
       authorUsername: json['user']['username'],
+      createdAt: DateTime.parse(json['created_at']),
+    );
+  }
+}
+
+class BlogDonation {
+  final int id;
+  final String donorName;
+  final String donorUsername;
+  final String amount;
+  final String status;
+  final DateTime createdAt;
+
+  BlogDonation({
+    required this.id,
+    required this.donorName,
+    required this.donorUsername,
+    required this.amount,
+    required this.status,
+    required this.createdAt,
+  });
+
+  factory BlogDonation.fromJson(Map<String, dynamic> json) {
+    return BlogDonation(
+      id: json['id'],
+      donorName: json['donor']['full_name'],
+      donorUsername: json['donor']['username'],
+      amount: json['amount']?.toString() ?? '0',
+      status: json['status'] ?? 'PENDING',
       createdAt: DateTime.parse(json['created_at']),
     );
   }
