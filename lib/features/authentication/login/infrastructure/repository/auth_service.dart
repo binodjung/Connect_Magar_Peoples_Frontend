@@ -32,8 +32,13 @@ class AuthService {
             
             // Save user info here as well
             if (data['user'] != null) {
-              await prefs.setString('user_username', data['user']['username'] ?? '');
-              await prefs.setString('user_email', data['user']['email'] ?? '');
+              await prefs.setString('username', data['user']['username'] ?? '');
+              await prefs.setString('email', data['user']['email'] ?? '');
+              await prefs.setString('full_name', data['user']['full_name'] ?? '');
+              await prefs.setString('mobile_number', data['user']['mobile_number'] ?? '');
+              if (data['user']['profile_picture'] != null) {
+                await prefs.setString('profile_picture', data['user']['profile_picture']);
+              }
             }
             return data;
          }
@@ -47,8 +52,13 @@ class AuthService {
       
       // Also store user info for persistence
       if (data['user'] != null) {
-        await prefs.setString('user_username', data['user']['username'] ?? '');
-        await prefs.setString('user_email', data['user']['email'] ?? '');
+        await prefs.setString('username', data['user']['username'] ?? '');
+        await prefs.setString('email', data['user']['email'] ?? '');
+        await prefs.setString('full_name', data['user']['full_name'] ?? '');
+        await prefs.setString('mobile_number', data['user']['mobile_number'] ?? '');
+        if (data['user']['profile_picture'] != null) {
+          await prefs.setString('profile_picture', data['user']['profile_picture']);
+        }
       }
       
       return data;
@@ -57,9 +67,12 @@ class AuthService {
       }
     } catch (e) {
       if (e is TimeoutException) {
-        throw Exception('Connection Timeout: Please check if the server is running and reachable at ${ApiConstants.baseUrl}');
+        throw Exception('Connection Timeout: Please check if the server is running and reachable');
       }
-      throw Exception('Connection Error: ${e.toString()}');
+      // Pass through the message without prepending 'Connection Error' 
+      // if it's already a cleaner error message from the try block.
+      final errorMessage = e.toString().replaceAll('Exception: ', '');
+      throw Exception(errorMessage);
     }
   }
 

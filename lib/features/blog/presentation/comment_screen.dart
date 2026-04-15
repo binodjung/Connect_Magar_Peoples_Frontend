@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/blog_model.dart';
 import '../data/blog_service.dart';
+import '../../../../core/utils/toast_util.dart';
 
 class CommentScreen extends StatefulWidget {
   final int postId;
@@ -102,6 +103,7 @@ class _CommentScreenState extends State<CommentScreen> {
         setState(() {
           _comments.insert(0, newComment); // Add to top
         });
+        ToastUtil.showTopToast(context, 'Comment added successfully!');
         // Scroll to top
         if (_scrollController.hasClients) {
           _scrollController.animateTo(
@@ -146,19 +148,13 @@ class _CommentScreenState extends State<CommentScreen> {
         setState(() {
           _comments.removeAt(index);
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Comment deleted')),
-        );
+        ToastUtil.showTopToast(context, 'Comment deleted');
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to delete comment')),
-        );
+        ToastUtil.showTopToast(context, 'Failed to delete comment', isError: true);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ToastUtil.showTopToast(context, 'Error: $e', isError: true);
       }
     }
   }

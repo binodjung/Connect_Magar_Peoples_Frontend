@@ -305,4 +305,59 @@ class BlogService {
       return false;
     }
   }
+
+  // ── Record a donation ────────────────────────────────────────────────────
+  Future<Map<String, dynamic>> recordDonation({
+    required int postId,
+    required String amount,
+    required String transactionId,
+  }) async {
+    final url = '${ApiConstants.blogPosts}$postId/donate/';
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: await _authHeaders(),
+        body: jsonEncode({
+          'amount': amount,
+          'transaction_id': transactionId,
+        }),
+      ).timeout(const Duration(seconds: 8));
+
+      if (response.statusCode == 201) {
+        return jsonDecode(response.body);
+      } else {
+        return {'success': false, 'error': response.body};
+      }
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  // ── Verify a donation ────────────────────────────────────────────────────
+  Future<Map<String, dynamic>> verifyDonation({
+    required int postId,
+    required String transactionId,
+  }) async {
+    final url = '${ApiConstants.blogPosts}$postId/verify-donation/';
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: await _authHeaders(),
+        body: jsonEncode({
+          'transaction_id': transactionId,
+        }),
+      ).timeout(const Duration(seconds: 8));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {'success': false, 'error': response.body};
+      }
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
 }
+

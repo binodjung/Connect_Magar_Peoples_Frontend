@@ -3,6 +3,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../data/blog_model.dart';
 import '../data/blog_service.dart';
 import 'comment_screen.dart';
+import '../infrastructure/esewa_service.dart';
+import '../../../../core/constants/api_constants.dart';
+import 'esewa_payment_screen.dart';
+import '../../../../core/utils/toast_util.dart';
 
 class BlogDetailScreen extends StatefulWidget {
   final BlogPost post;
@@ -80,6 +84,7 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
             _likesCount = serverTotalLikes;
           }
         });
+        ToastUtil.showTopToast(context, serverIsLiked ? 'Post liked!' : 'Like removed');
       }
     } catch (e) {
       if (mounted) {
@@ -88,9 +93,7 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
           _isLiked = wasLiked;
           _likesCount = originalCount;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to update like. Try again.')),
-        );
+        ToastUtil.showTopToast(context, 'Failed to update like. Try again.', isError: true);
       }
     } finally {
       if (mounted) setState(() => _isLiking = false);
@@ -113,25 +116,117 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
       if (!success) {
         if (!mounted) return;
         setState(() => _isBookmarked = !_isBookmarked);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to update bookmark. Try again.')),
-        );
+        ToastUtil.showTopToast(context, 'Failed to update bookmark. Try again.', isError: true);
       } else {
         if (!mounted) return;
         setState(() => _isBookmarked = serverIsBookmarked);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(serverIsBookmarked ? 'Post bookmarked!' : 'Bookmark removed'),
-            duration: const Duration(seconds: 1),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        ToastUtil.showTopToast(context, serverIsBookmarked ? 'Post bookmarked!' : 'Bookmark removed');
       }
     } catch (e) {
       if (!mounted) return;
       setState(() => _isBookmarked = !_isBookmarked);
     } finally {
       if (mounted) setState(() => _isBookmarking = false);
+    }
+  }
+
+  // ── eSewa Donation ───────────────────────────────────────────────────────
+  void _donateViaEsewa() async {
+    final TextEditingController amountController = TextEditingController(text: "100");
+    
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Enter Donation Amount', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('How much would you like to donate to this author?'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: amountController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                prefixText: 'Rs. ',
+                border: OutlineInputBorder(),
+                labelText: 'Amount',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF60BB46)),
+            child: const Text('Continue', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    final String amount = amountController.text.trim();
+    if (amount.isEmpty || double.tryParse(amount) == null || double.parse(amount) <= 0) {
+      if (mounted) {
+        ToastUtil.showTopToast(context, 'Please enter a valid amount', isError: true);
+      }
+      return;
+    }
+
+    final transactionId = EsewaService.generateTransactionUUID();
+
+    // Step 1: Record donation in backend (PENDING status)
+    final result = await _blogService.recordDonation(
+      postId: widget.post.id,
+      amount: amount,
+      transactionId: transactionId,
+    );
+
+    if (result['success'] != true) {
+      if (mounted) {
+        ToastUtil.showTopToast(context, 'Could not initiate donation: ${result['error'] ?? 'Unknown error'}', isError: true);
+      }
+      return;
+    }
+
+    // Step 2: Generate signature and open eSewa WebView
+    final signature = EsewaService.generateSignature(
+      amount: amount,
+      transactionId: transactionId,
+      merchantCode: ApiConstants.esewaMerchantCode,
+    );
+
+    if (!mounted) return;
+    final paymentSuccess = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EsewaPaymentScreen(
+          postId: widget.post.id,
+          amount: amount,
+          transactionId: transactionId,
+          signature: signature,
+        ),
+      ),
+    );
+
+    if (paymentSuccess == true) {
+      if (!mounted) return;
+      final verifyResult = await _blogService.verifyDonation(
+        postId: widget.post.id,
+        transactionId: transactionId,
+      );
+
+      if (verifyResult['success'] == true) {
+        if (mounted) {
+          ToastUtil.showTopToast(context, 'Payment verified successfully! Please go back and refresh to see it.');
+        }
+      } else {
+        if (mounted) {
+          ToastUtil.showTopToast(context, 'Payment completed, but verification failed', isError: true);
+        }
+      }
     }
   }
 
@@ -386,7 +481,7 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
 
                   const SizedBox(height: 24),
 
-                  // ── Secondary Info box (Green Style) ───────────────────
+                  // ── Summary Info box (Green Style) ───────────────────
                   const Text(
                     'Summary',
                     style: TextStyle(
@@ -415,6 +510,154 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 24),
+
+                  if (widget.post.allowDonation)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFC00000).withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFC00000).withOpacity(0.2)),
+                      ),
+                      child: Column(
+                        children: [
+                          const Icon(Icons.volunteer_activism, color: Color(0xFFC00000), size: 40),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Support this Post',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Your donation helps the author create more content.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton.icon(
+                              onPressed: _donateViaEsewa,
+                              icon: const Icon(Icons.payment, color: Colors.white),
+                              label: const Text(
+                                'Donate via eSewa',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF60BB46), // eSewa Green
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  if (widget.post.donations.isNotEmpty) ...[
+                    const SizedBox(height: 32),
+                    Text(
+                      'Donation History (Total: Rs. ${widget.post.totalDonations})',
+                      style: const TextStyle(
+                        fontFamily: 'Arial',
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF333333),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: widget.post.donations.length,
+                      itemBuilder: (context, index) {
+                        final donation = widget.post.donations[index];
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.02),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 18,
+                                    backgroundColor: const Color(0xFFC00000).withOpacity(0.1),
+                                    child: Text(
+                                      donation.donorName.isNotEmpty
+                                          ? donation.donorName[0].toUpperCase()
+                                          : '?',
+                                      style: const TextStyle(
+                                        color: Color(0xFFC00000),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        donation.donorName,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      Text(
+                                        _formatDate(donation.createdAt),
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    'Rs. ${donation.amount}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF60BB46),
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Icon(
+                                    donation.status == 'COMPLETE'
+                                        ? Icons.check_circle
+                                        : Icons.pending,
+                                    color: donation.status == 'COMPLETE'
+                                        ? const Color(0xFF60BB46)
+                                        : Colors.orange,
+                                    size: 16,
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
 
                   const SizedBox(height: 48),
                 ],

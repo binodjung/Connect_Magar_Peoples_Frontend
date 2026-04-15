@@ -1,18 +1,20 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 class ApiConstants {
-  // 1. Android Emulator: Use 10.0.2.2
-  // 2. Physical device: Use your PC's IP (e.g., 192.168.1.7)
-  // 3. IMPORTANT: Run backend with: python manage.py runserver 0.0.0.0:8000
+  // To update your IP, run: ipconfig | findstr "IPv4"
+  // Current IP: 192.168.1.5
+  // Run backend with: python manage.py runserver 0.0.0.0:8000
 
-  static String get baseUrl => dotenv.env['BASE_URL'] ?? 'http://192.168.18.116:8000/api';
-  // static const String baseUrl = 'http://10.0.2.2:8000/api'; // Use for Android Emulator
+  static const String baseUrl = 'http://192.168.1.5:8000/api';
+  // static const String baseUrl = 'http://172.20.10.2:8000/api';
 
   // Auth
   static String get login => '$baseUrl/auth/login/';
   static String get register => '$baseUrl/auth/register/';
   static String get profile => '$baseUrl/auth/profile/';
   static String get verifyEmail => '$baseUrl/auth/verify-email/';
+  static String get forgotPassword => '$baseUrl/auth/forgot-password/';
+  static String get verifyResetOtp => '$baseUrl/auth/verify-reset-otp/';
+  static String get resetPassword => '$baseUrl/auth/reset-password/';
+  static String get changePassword => '$baseUrl/auth/change-password/';
 
   // Blog
   static String get blogPosts => '$baseUrl/blog/posts/';
@@ -29,4 +31,10 @@ class ApiConstants {
   static String get dictionaryTranslate => '$baseUrl/dictionary/translate/';
   // Quiz
   static String get quizQuestions => '$baseUrl/quiz/questions/';
+
+  // eSewa Sandbox
+  static const String esewaMerchantCode = 'EPAYTEST';
+  static const String esewaSecretKey = '8gBm/:&EnhH.1/q';
+  static const String esewaUatUrl =
+      'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
 }

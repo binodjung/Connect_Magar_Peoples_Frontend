@@ -5,6 +5,7 @@ import '../../../core/utils/colors.dart';
 import '../../blog/presentation/liked_posts_screen.dart';
 import '../../blog/presentation/bookmarked_posts_screen.dart';
 import 'update_profile_screen.dart';
+import 'change_password_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String username;
@@ -25,6 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late String _fullName = "";
   late String _email;
   late String _mobileNumber = "";
+  String? _profilePicture;
 
   @override
   void initState() {
@@ -40,6 +42,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _username = prefs.getString('username') ?? _username;
       _fullName = prefs.getString('full_name') ?? "";
       _mobileNumber = prefs.getString('mobile_number') ?? "";
+      _profilePicture = prefs.getString('profile_picture');
     });
   }
 
@@ -64,6 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           currentFullName: _fullName,
           email: _email,
           currentMobile: _mobileNumber,
+          currentProfilePicture: _profilePicture,
         ),
       ),
     );
@@ -99,10 +103,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           children: [
             // Avatar
-            const CircleAvatar(
+            CircleAvatar(
               radius: 50,
               backgroundColor: AppColors.primaryOrange,
-              child: Icon(Icons.person, size: 50, color: Colors.white),
+              backgroundImage: _profilePicture != null 
+                ? NetworkImage(_profilePicture!) 
+                : null,
+              child: _profilePicture == null 
+                ? const Icon(Icons.person, size: 50, color: Colors.white) 
+                : null,
             ),
             const SizedBox(height: 24),
 
@@ -143,6 +152,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
               label: 'Update Profile',
               subtitle: 'Change your personal details',
               onTap: _goToUpdateProfile,
+            ),
+            const SizedBox(height: 12),
+
+            _buildActionTile(
+              context,
+              icon: Icons.lock_outline,
+              iconColor: AppColors.primaryMaroon,
+              label: 'Change Password',
+              subtitle: 'Update your security credentials',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
+              ),
             ),
             const SizedBox(height: 12),
 

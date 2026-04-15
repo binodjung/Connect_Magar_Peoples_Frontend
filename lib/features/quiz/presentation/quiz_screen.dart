@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/quiz_service.dart';
 import '../data/quiz_model.dart';
+import '../../../../core/utils/toast_util.dart';
 
 class QuizScreen extends StatefulWidget {
   const QuizScreen({super.key});
@@ -49,9 +50,7 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading questions: $e')),
-        );
+        ToastUtil.showTopToast(context, 'Error loading questions: $e', isError: true);
       }
     }
   }

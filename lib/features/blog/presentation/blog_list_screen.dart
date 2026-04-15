@@ -3,6 +3,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../data/blog_model.dart';
 import '../data/blog_service.dart';
 import 'blog_detail_screen.dart';
+import '../../../../core/utils/colors.dart';
+import '../../../../core/utils/toast_util.dart';
 
 class BlogListScreen extends StatefulWidget {
   const BlogListScreen({Key? key}) : super(key: key);
@@ -25,6 +27,8 @@ class _BlogListScreenState extends State<BlogListScreen> {
   bool _hasMore = true;
   int _page = 1;
   String _searchQuery = '';
+  bool _isError = false;
+  String _errorMessage = '';
 
   @override
   void initState() {
@@ -82,13 +86,19 @@ class _BlogListScreenState extends State<BlogListScreen> {
         _hasMore = hasMore;
         _page++;
         _isLoading = false;
+        _isError = false;
         _applySearch();
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error: $e')));
+      setState(() {
+        _isLoading = false;
+        _isError = _allPosts.isEmpty; // Only show error screen if we have no data
+        _errorMessage = e.toString().contains('SocketException') 
+            ? 'Connection failed. Please check if the server is running.' 
+            : 'Error: $e';
+      });
+      ToastUtil.showTopToast(context, _errorMessage, isError: true);
     }
   }
 
@@ -111,6 +121,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
       _allPosts.clear();
       _filteredPosts.clear();
       _hasMore = true;
+      _isError = false;
     });
     await _fetchPosts();
   }
@@ -147,6 +158,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
           likesCount: serverTotalLikes ?? newLikesCount
         );
         _updatePostInLists(post.id, syncedPost);
+        ToastUtil.showTopToast(context, serverIsLiked ? 'Post liked!' : 'Like removed');
       } else {
         throw Exception('Failed');
       }
@@ -155,8 +167,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
         // Revert on failure
         final revertedPost = _rebuildPost(post, isLiked: wasLiked, likesCount: originalCount);
         _updatePostInLists(post.id, revertedPost);
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to update like. Please try again.')));
+        ToastUtil.showTopToast(context, 'Failed to update like. Please try again.', isError: true);
       }
     } finally {
       if (mounted) setState(() => _likingPostIds.remove(post.id));
@@ -175,6 +186,8 @@ class _BlogListScreenState extends State<BlogListScreen> {
       createdAt: p.createdAt,
       likesCount: likesCount,
       isLiked: isLiked,
+      isBookmarked: p.isBookmarked,
+      allowDonation: p.allowDonation,
       comments: p.comments,
     );
   }
@@ -193,7 +206,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: AppColors.lightGrey,
       appBar: AppBar(
         title: const Text(
           'Blog',
@@ -220,7 +233,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search posts, authors, categories...',
+                hintText: 'Search  posts by title or category',
                 hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
                 prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
                 suffixIcon: _searchQuery.isNotEmpty
@@ -232,7 +245,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
                       )
                     : null,
                 filled: true,
-                fillColor: const Color(0xFFF5F6FA),
+                fillColor: AppColors.lightGrey,
                 contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -244,7 +257,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE8A323), width: 1.5),
+                  borderSide: const BorderSide(color: AppColors.primaryOrange, width: 1.5),
                 ),
               ),
             ),
@@ -269,24 +282,26 @@ class _BlogListScreenState extends State<BlogListScreen> {
           // ── List ──────────────────────────────────────────────────────────
           Expanded(
             child: _allPosts.isEmpty && _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFFE8A323)))
-                : _filteredPosts.isEmpty && !_isLoading
-                    ? _buildEmptyState()
-                    : RefreshIndicator(
-                        color: const Color(0xFFE8A323),
-                        onRefresh: _refreshPosts,
-                        child: ListView.builder(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                          itemCount: _filteredPosts.length + (_hasMore && _searchQuery.isEmpty ? 1 : 0),
-                          itemBuilder: (context, index) {
-                            if (index == _filteredPosts.length) {
-                              return _buildLoadMoreIndicator();
-                            }
-                            return _buildBlogCard(context, index);
-                          },
-                        ),
-                      ),
+                ? const Center(child: CircularProgressIndicator(color: AppColors.primaryOrange))
+                : _isError 
+                    ? _buildErrorState()
+                    : _filteredPosts.isEmpty && !_isLoading
+                        ? _buildEmptyState()
+                        : RefreshIndicator(
+                            color: AppColors.primaryOrange,
+                            onRefresh: _refreshPosts,
+                            child: ListView.builder(
+                              controller: _scrollController,
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                              itemCount: _filteredPosts.length + (_hasMore && _searchQuery.isEmpty ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                if (index == _filteredPosts.length) {
+                                  return _buildLoadMoreIndicator();
+                                }
+                                return _buildBlogCard(context, index);
+                              },
+                            ),
+          ),
           ),
         ],
       ),
@@ -310,10 +325,41 @@ class _BlogListScreenState extends State<BlogListScreen> {
             const SizedBox(height: 8),
             TextButton(
               onPressed: () => _searchController.clear(),
-              child: const Text('Clear search', style: TextStyle(color: Color(0xFFE8A323))),
+              child: const Text('Clear search', style: TextStyle(color: AppColors.primaryOrange)),
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.cloud_off_rounded, size: 64, color: Colors.redAccent),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16, color: Colors.black87),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _refreshPosts,
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              label: const Text('Retry Connection', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryOrange,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -350,7 +396,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
       child: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
-                color: Color(0xFFE8A323),
+                color: AppColors.primaryOrange,
                 strokeWidth: 2,
               ),
             )
@@ -360,8 +406,8 @@ class _BlogListScreenState extends State<BlogListScreen> {
                 icon: const Icon(Icons.expand_more),
                 label: const Text('Load more'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFE8A323),
-                  side: const BorderSide(color: Color(0xFFE8A323)),
+                  foregroundColor: AppColors.primaryOrange,
+                  side: const BorderSide(color: AppColors.primaryOrange),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 ),
               ),
@@ -423,7 +469,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE8A323),
+                          color: AppColors.primaryOrange,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -450,13 +496,13 @@ class _BlogListScreenState extends State<BlogListScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE8A323).withOpacity(0.12),
+                      color: AppColors.primaryOrange.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       post.category.toUpperCase(),
                       style: const TextStyle(
-                        color: Color(0xFFE8A323),
+                        color: AppColors.primaryOrange,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
@@ -508,6 +554,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
                           style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                         ),
                       ),
+
                       // ── Like Button (tappable) ────────────────────────
                       GestureDetector(
                         onTap: () => _toggleLike(index),
@@ -517,7 +564,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
                           decoration: BoxDecoration(
                             color: post.isLiked
                                 ? Colors.red.withOpacity(0.08)
-                                : const Color(0xFFF5F6FA),
+                                : AppColors.lightGrey,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: post.isLiked

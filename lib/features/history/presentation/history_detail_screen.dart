@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/history_model.dart';
 import '../data/history_service.dart';
 import '../data/history_pdf_service.dart';
+import '../../../core/utils/toast_util.dart';
 
 class HistoryDetailScreen extends StatefulWidget {
   final int historyId;
@@ -95,23 +96,12 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
   Future<void> _downloadPdf() async {
     const maroonColor = Color(0xFF8B0000);
     if (_history != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Record is downloading in pdf...'),
-          backgroundColor: maroonColor,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      ToastUtil.showTopToast(context, 'Record is downloading in pdf...');
 
       await HistoryPdfService.generateAndDownloadPdf(_history!);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Record is downloaded in pdf'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        ToastUtil.showTopToast(context, 'Record is downloaded in pdf');
       }
     }
   }

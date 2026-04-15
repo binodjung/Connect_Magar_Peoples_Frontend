@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/blog_model.dart';
 import '../data/blog_service.dart';
 import 'blog_detail_screen.dart';
+import '../../../../core/utils/colors.dart';
 
 class BookmarkedPostsScreen extends StatefulWidget {
   const BookmarkedPostsScreen({super.key});
@@ -46,7 +47,7 @@ class _BookmarkedPostsScreenState extends State<BookmarkedPostsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: AppColors.lightGrey,
       appBar: AppBar(
         title: const Text(
           'Bookmarked Posts',
@@ -64,13 +65,13 @@ class _BookmarkedPostsScreenState extends State<BookmarkedPostsScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFE8A323)))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primaryOrange))
           : _error != null
               ? _buildError()
               : _posts.isEmpty
                   ? _buildEmpty()
                   : RefreshIndicator(
-                      color: const Color(0xFFE8A323),
+                      color: AppColors.primaryOrange,
                       onRefresh: _fetch,
                       child: ListView.builder(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -114,7 +115,7 @@ class _BookmarkedPostsScreenState extends State<BookmarkedPostsScreen> {
           const SizedBox(height: 12),
           ElevatedButton(
             onPressed: _fetch,
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE8A323)),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryOrange),
             child: const Text('Retry', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -168,10 +169,10 @@ class _BookmarkedPostsScreenState extends State<BookmarkedPostsScreen> {
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8A323).withValues(alpha: 0.1),
+                  color: AppColors.primaryOrange.withValues(alpha: 0.1),
                   borderRadius: const BorderRadius.horizontal(left: Radius.circular(18)),
                 ),
-                child: const Icon(Icons.bookmark_outlined, color: Color(0xFFE8A323), size: 36),
+                child: const Icon(Icons.bookmark_outlined, color: AppColors.primaryOrange, size: 36),
               ),
 
             // Content
@@ -186,7 +187,7 @@ class _BookmarkedPostsScreenState extends State<BookmarkedPostsScreen> {
                       style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFFE8A323),
+                        color: AppColors.primaryOrange,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -205,7 +206,7 @@ class _BookmarkedPostsScreenState extends State<BookmarkedPostsScreen> {
                     Row(
                       children: [
                         CircleAvatar(
-                          backgroundColor: const Color(0xFF8B0000),
+                          backgroundColor: AppColors.darkMaroon,
                           radius: 10,
                           child: Text(
                             post.authorName.isNotEmpty ? post.authorName[0].toUpperCase() : '?',
@@ -220,7 +221,7 @@ class _BookmarkedPostsScreenState extends State<BookmarkedPostsScreen> {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const Icon(Icons.bookmark, color: Color(0xFFE8A323), size: 13),
+                        const Icon(Icons.bookmark, color: AppColors.primaryOrange, size: 13),
                         const SizedBox(width: 3),
                         Text(
                           'Saved',

@@ -1,15 +1,20 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../core/utils/colors.dart';
+import '../../../core/utils/toast_util.dart';
 
 class UpdateProfileScreen extends StatefulWidget {
   final String currentUsername;
   final String currentFullName;
   final String email;
-  final String currentMobile;
+   final String currentMobile;
+  final String? currentProfilePicture;
 
   const UpdateProfileScreen({
     Key? key,
@@ -17,6 +22,7 @@ class UpdateProfileScreen extends StatefulWidget {
     required this.currentFullName,
     required this.email,
     required this.currentMobile,
+    this.currentProfilePicture,
   }) : super(key: key);
 
   @override
@@ -28,6 +34,8 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   late TextEditingController _fullNameController;
   late TextEditingController _mobileController;
   bool _isLoading = false;
+  File? _image;
+  final _picker = ImagePicker();
 
   @override
   void initState() {
@@ -37,6 +45,15 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
     _mobileController = TextEditingController(text: widget.currentMobile);
   }
 
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+    }
+  }
+
   Future<void> _updateProfile() async {
     setState(() => _isLoading = true);
 
@@ -44,44 +61,58 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('access_token');
 
-      final response = await http.patch(
-        Uri.parse(ApiConstants.profile),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({
-          'username': _usernameController.text,
-          'full_name': _fullNameController.text,
-          'mobile_number': _mobileController.text,
-        }),
-      ).timeout(const Duration(seconds: 10));
+      // Use MultipartRequest for image upload
+      var request = http.MultipartRequest('PATCH', Uri.parse(ApiConstants.profile));
+      request.headers['Authorization'] = 'Bearer $token';
+      
+      request.fields['username'] = _usernameController.text;
+      request.fields['full_name'] = _fullNameController.text;
+      request.fields['mobile_number'] = _mobileController.text;
+
+      if (_image != null) {
+        request.files.add(await http.MultipartFile.fromPath(
+          'profile_picture',
+          _image!.path,
+          contentType: MediaType('image', 'jpeg'),
+        ));
+      }
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
 
       if (!mounted) return;
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         
-        // Update local storage if needed
         await prefs.setString('username', data['username']);
         await prefs.setString('full_name', data['full_name']);
         await prefs.setString('mobile_number', data['mobile_number']);
+        if (data['profile_picture'] != null) {
+          await prefs.setString('profile_picture', data['profile_picture']);
+        }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully!'), backgroundColor: Colors.green),
-        );
-        Navigator.pop(context, true); // Return true to indicate success
+        ToastUtil.showTopToast(context, 'Profile updated successfully!');
+        Navigator.pop(context, true); 
       } else {
-        final error = jsonDecode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error['error'] ?? 'Failed to update profile')),
-        );
+        // If the server returns HTML (e.g. <!DOCTYPE html>), jsonDecode will fail
+        String errorMessage = 'Failed to update profile (${response.statusCode})';
+        try {
+          final error = jsonDecode(response.body);
+          errorMessage = error['error'] ?? error['message'] ?? errorMessage;
+        } catch (e) {
+          // If response is not JSON, we just use the status code message
+        }
+        
+        ToastUtil.showTopToast(context, errorMessage, isError: true);
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      String errorText = 'Error: $e';
+      if (e is FormatException) {
+        errorText = 'Server Error: The server returned an invalid response. Please check your backend connections.';
+      }
+      ToastUtil.showTopToast(context, errorText, isError: true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -105,62 +136,100 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Profile Information',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Update your personal details below.',
-              style: TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 32),
-            
-            _buildLabel('Email (Not updateable)'),
-            TextField(
-              controller: TextEditingController(text: widget.email),
-              enabled: false,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.grey[100],
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Profile Information',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-            ),
-            const SizedBox(height: 20),
-            
-            _buildLabel('Username'),
-            _buildTextField(_usernameController, 'Enter username'),
-            const SizedBox(height: 20),
-            
-            _buildLabel('Full Name'),
-            _buildTextField(_fullNameController, 'Enter full name'),
-            const SizedBox(height: 20),
-            
-            _buildLabel('Mobile Number'),
-            _buildTextField(_mobileController, 'Enter mobile number', keyboardType: TextInputType.phone),
-            
-            const SizedBox(height: 40),
-            
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _updateProfile,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryOrange,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              const SizedBox(height: 8),
+              const Text(
+                'Update your personal details below.',
+                style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 32),
+              
+              // Image Picker Section
+              Center(
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 60,
+                      backgroundColor: AppColors.lightGrey,
+                      backgroundImage: _image != null 
+                        ? FileImage(_image!) 
+                        : (widget.currentProfilePicture != null 
+                            ? NetworkImage(widget.currentProfilePicture!) as ImageProvider
+                            : null),
+                      child: (_image == null && widget.currentProfilePicture == null)
+                        ? const Icon(Icons.person, size: 60, color: Colors.grey)
+                        : null,
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: _pickImage,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: const BoxDecoration(
+                            color: AppColors.primaryOrange,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                child: _isLoading 
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('Save Changes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
               ),
-            ),
-          ],
+              const SizedBox(height: 32),
+              
+              _buildLabel('Email (Not updateable)'),
+              TextField(
+                controller: TextEditingController(text: widget.email),
+                enabled: false,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              _buildLabel('Username'),
+              _buildTextField(_usernameController, 'Enter username'),
+              const SizedBox(height: 20),
+              
+              _buildLabel('Full Name'),
+              _buildTextField(_fullNameController, 'Enter full name'),
+              const SizedBox(height: 20),
+              
+              _buildLabel('Mobile Number'),
+              _buildTextField(_mobileController, 'Enter mobile number', keyboardType: TextInputType.phone),
+              
+              const SizedBox(height: 40),
+              
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _updateProfile,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryOrange,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: _isLoading 
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Save Changes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
