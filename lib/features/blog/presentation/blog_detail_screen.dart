@@ -6,6 +6,7 @@ import 'comment_screen.dart';
 import '../infrastructure/esewa_service.dart';
 import '../../../../core/constants/api_constants.dart';
 import 'esewa_payment_screen.dart';
+import '../../../../core/utils/toast_util.dart';
 
 class BlogDetailScreen extends StatefulWidget {
   final BlogPost post;
@@ -83,6 +84,7 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
             _likesCount = serverTotalLikes;
           }
         });
+        ToastUtil.showTopToast(context, serverIsLiked ? 'Post liked!' : 'Like removed');
       }
     } catch (e) {
       if (mounted) {
@@ -91,9 +93,7 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
           _isLiked = wasLiked;
           _likesCount = originalCount;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to update like. Try again.')),
-        );
+        ToastUtil.showTopToast(context, 'Failed to update like. Try again.', isError: true);
       }
     } finally {
       if (mounted) setState(() => _isLiking = false);
@@ -116,19 +116,11 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
       if (!success) {
         if (!mounted) return;
         setState(() => _isBookmarked = !_isBookmarked);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to update bookmark. Try again.')),
-        );
+        ToastUtil.showTopToast(context, 'Failed to update bookmark. Try again.', isError: true);
       } else {
         if (!mounted) return;
         setState(() => _isBookmarked = serverIsBookmarked);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(serverIsBookmarked ? 'Post bookmarked!' : 'Bookmark removed'),
-            duration: const Duration(seconds: 1),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        ToastUtil.showTopToast(context, serverIsBookmarked ? 'Post bookmarked!' : 'Bookmark removed');
       }
     } catch (e) {
       if (!mounted) return;
@@ -178,7 +170,7 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
     final String amount = amountController.text.trim();
     if (amount.isEmpty || double.tryParse(amount) == null || double.parse(amount) <= 0) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter a valid amount')));
+        ToastUtil.showTopToast(context, 'Please enter a valid amount', isError: true);
       }
       return;
     }
@@ -194,9 +186,7 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
 
     if (result['success'] != true) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not initiate donation: ${result['error'] ?? 'Unknown error'}')),
-        );
+        ToastUtil.showTopToast(context, 'Could not initiate donation: ${result['error'] ?? 'Unknown error'}', isError: true);
       }
       return;
     }
@@ -230,21 +220,11 @@ class _BlogDetailScreenState extends State<BlogDetailScreen> {
 
       if (verifyResult['success'] == true) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Payment verified successfully! Please go back and refresh to see it.'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          ToastUtil.showTopToast(context, 'Payment verified successfully! Please go back and refresh to see it.');
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Payment completed, but verification failed: ${verifyResult['error'] ?? 'Unknown'}'),
-              backgroundColor: Colors.orange,
-            ),
-          );
+          ToastUtil.showTopToast(context, 'Payment completed, but verification failed', isError: true);
         }
       }
     }

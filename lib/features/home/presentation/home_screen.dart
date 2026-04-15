@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
-import '../../../core/theme_provider.dart';
 import '../../authentication/login/presentation/login_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../blog/presentation/blog_list_screen.dart';
@@ -168,8 +166,7 @@ class _HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDark = themeProvider.isDarkMode;
+    const isDark = false;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -198,18 +195,6 @@ class _HomeContent extends StatelessWidget {
           ],
         ),
         centerTitle: true,
-        actions: [
-          Switch(
-            value: isDark,
-            onChanged: (value) {
-              themeProvider.toggleTheme(value);
-            },
-            activeColor: const Color(0xFF8B0000),
-            inactiveThumbColor: Colors.orange,
-            inactiveTrackColor: Colors.orange.withOpacity(0.5),
-          ),
-          const SizedBox(width: 8),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

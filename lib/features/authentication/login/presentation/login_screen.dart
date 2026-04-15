@@ -4,6 +4,7 @@ import '../../sign_up/presentation/sign_up_screen.dart';
 import 'forgot_password_screen.dart';
 import '../infrastructure/repository/auth_service.dart';
 import '../../../home/presentation/home_screen.dart';
+import '../../../../core/utils/toast_util.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -27,9 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _handleLogin() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter email and password')),
-      );
+      ToastUtil.showTopToast(context, 'Please enter email and password', isError: true);
       return;
     }
 
@@ -43,9 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
       
       if (!mounted) return;
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login Successful!'), backgroundColor: Colors.green),
-      );
+      ToastUtil.showTopToast(context, 'Login Successful!');
       
       Navigator.pushAndRemoveUntil(
         context,
@@ -60,9 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
       
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
-      );
+      ToastUtil.showTopToast(context, e.toString().replaceAll('Exception: ', ''), isError: true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

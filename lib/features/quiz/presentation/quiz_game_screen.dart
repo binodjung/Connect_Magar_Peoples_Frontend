@@ -4,6 +4,7 @@ import '../data/quiz_service.dart';
 import '../data/quiz_model.dart';
 import 'quiz_selection_screen.dart';
 import '../../../../core/utils/colors.dart';
+import '../../../../core/utils/toast_util.dart';
 
 class QuizGameScreen extends StatefulWidget {
   final String category;
@@ -73,6 +74,8 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
           _timeLeft--;
         });
       } else {
+        _timer?.cancel();
+        ToastUtil.showTopToast(context, "Time's up! Auto-submitting...", isError: true);
         _submitQuiz();
       }
     });

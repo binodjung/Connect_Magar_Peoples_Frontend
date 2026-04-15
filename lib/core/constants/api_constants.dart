@@ -1,10 +1,10 @@
 class ApiConstants {
   // To update your IP, run: ipconfig | findstr "IPv4"
-  // Current IP: 192.168.1.82
+  // Current IP: 192.168.1.5
   // Run backend with: python manage.py runserver 0.0.0.0:8000
 
-  static const String baseUrl = 'http://192.168.1.82:8000/api';
-  // static const String baseUrl = 'http://192.168.1.82:8000/api'; // Use for Android Emulator
+  static const String baseUrl = 'http://192.168.1.5:8000/api';
+  // static const String baseUrl = 'http://172.20.10.2:8000/api';
 
   // Auth
   static String get login => '$baseUrl/auth/login/';
@@ -35,5 +35,6 @@ class ApiConstants {
   // eSewa Sandbox
   static const String esewaMerchantCode = 'EPAYTEST';
   static const String esewaSecretKey = '8gBm/:&EnhH.1/q';
-  static const String esewaUatUrl = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
+  static const String esewaUatUrl =
+      'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
 }

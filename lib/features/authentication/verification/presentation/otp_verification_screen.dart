@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/utils/colors.dart';
 import '../../login/infrastructure/repository/auth_service.dart';
 import '../../login/presentation/login_screen.dart';
+import '../../../../core/utils/toast_util.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
   final String email; // Pass email to confirm which user to verify
@@ -38,13 +39,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     String otp = _otpControllers.map((c) => c.text).join();
     // Updated validation to check for 6 digits
     if (otp.length != 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid 6-digit OTP'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ToastUtil.showTopToast(context, 'Please enter a valid 6-digit OTP', isError: true);
       return;
     }
 
@@ -55,13 +50,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
       
       if (!mounted) return;
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Email Verified Successfully! Login now.'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ToastUtil.showTopToast(context, 'Email Verified Successfully! Login now.');
       
       Navigator.pushAndRemoveUntil(
         context,
@@ -71,17 +60,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
       
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(
-           content: Text(e.toString().replaceAll('Exception: ', '')),
-           backgroundColor: Colors.red,
-           behavior: SnackBarBehavior.floating,
-           margin: const EdgeInsets.all(16),
-           shape: RoundedRectangleBorder(
-             borderRadius: BorderRadius.circular(8),
-           ),
-         ),
-      );
+      ToastUtil.showTopToast(context, e.toString().replaceAll('Exception: ', ''), isError: true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -184,9 +163,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
             Center(
               child: TextButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('OTP resent successfully')),
-                  );
+                  ToastUtil.showTopToast(context, 'OTP resent successfully');
                 },
                 child: const Text(
                   'Resend OTP',

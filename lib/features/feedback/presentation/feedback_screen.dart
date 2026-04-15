@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../../core/constants/api_constants.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/utils/toast_util.dart';
 
 class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({Key? key}) : super(key: key);
@@ -23,9 +24,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     if (_emailController.text.isEmpty ||
         _subjectController.text.isEmpty ||
         _messageController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
-      );
+      ToastUtil.showTopToast(context, 'Please fill all fields', isError: true);
       return;
     }
 
@@ -45,25 +44,16 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       if (!mounted) return;
 
       if (response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Feedback submitted successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        ToastUtil.showTopToast(context, 'Feedback submitted successfully!');
         _emailController.clear();
         _subjectController.clear();
         _messageController.clear();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to submit feedback: ${response.body}')),
-        );
+        ToastUtil.showTopToast(context, 'Failed to submit feedback', isError: true);
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Connection error: $e')),
-      );
+      ToastUtil.showTopToast(context, 'Connection error: $e', isError: true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

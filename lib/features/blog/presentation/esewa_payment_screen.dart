@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../core/constants/api_constants.dart';
+import '../../../../core/utils/toast_util.dart';
 
 class EsewaPaymentScreen extends StatefulWidget {
   final int postId;
@@ -106,12 +107,7 @@ class _EsewaPaymentScreenState extends State<EsewaPaymentScreen> {
     if (!mounted) return;
     
     // Show verifying toast
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Verifying payment...'),
-        backgroundColor: Colors.blue,
-      ),
-    );
+    ToastUtil.showTopToast(context, 'Verifying payment...');
 
     // Verify donation on backend
     // Since we don't have BlogService passed in directly, we could pass the verified status back
@@ -125,12 +121,7 @@ class _EsewaPaymentScreenState extends State<EsewaPaymentScreen> {
 
   void _onPaymentFailure() {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Payment was cancelled or failed.'),
-        backgroundColor: Colors.red,
-      ),
-    );
+    ToastUtil.showTopToast(context, 'Payment was cancelled or failed.', isError: true);
     Navigator.pop(context, false);
   }
 

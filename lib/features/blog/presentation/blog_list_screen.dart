@@ -4,6 +4,7 @@ import '../data/blog_model.dart';
 import '../data/blog_service.dart';
 import 'blog_detail_screen.dart';
 import '../../../../core/utils/colors.dart';
+import '../../../../core/utils/toast_util.dart';
 
 class BlogListScreen extends StatefulWidget {
   const BlogListScreen({Key? key}) : super(key: key);
@@ -97,8 +98,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
             ? 'Connection failed. Please check if the server is running.' 
             : 'Error: $e';
       });
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(_errorMessage)));
+      ToastUtil.showTopToast(context, _errorMessage, isError: true);
     }
   }
 
@@ -158,6 +158,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
           likesCount: serverTotalLikes ?? newLikesCount
         );
         _updatePostInLists(post.id, syncedPost);
+        ToastUtil.showTopToast(context, serverIsLiked ? 'Post liked!' : 'Like removed');
       } else {
         throw Exception('Failed');
       }
@@ -166,8 +167,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
         // Revert on failure
         final revertedPost = _rebuildPost(post, isLiked: wasLiked, likesCount: originalCount);
         _updatePostInLists(post.id, revertedPost);
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to update like. Please try again.')));
+        ToastUtil.showTopToast(context, 'Failed to update like. Please try again.', isError: true);
       }
     } finally {
       if (mounted) setState(() => _likingPostIds.remove(post.id));

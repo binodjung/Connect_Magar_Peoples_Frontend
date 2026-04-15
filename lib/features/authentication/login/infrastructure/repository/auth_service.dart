@@ -67,9 +67,12 @@ class AuthService {
       }
     } catch (e) {
       if (e is TimeoutException) {
-        throw Exception('Connection Timeout: Please check if the server is running and reachable at ${ApiConstants.baseUrl}');
+        throw Exception('Connection Timeout: Please check if the server is running and reachable');
       }
-      throw Exception('Connection Error: ${e.toString()}');
+      // Pass through the message without prepending 'Connection Error' 
+      // if it's already a cleaner error message from the try block.
+      final errorMessage = e.toString().replaceAll('Exception: ', '');
+      throw Exception(errorMessage);
     }
   }
 

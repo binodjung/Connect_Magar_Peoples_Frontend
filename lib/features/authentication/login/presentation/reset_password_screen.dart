@@ -4,6 +4,7 @@ import 'dart:convert';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/utils/colors.dart';
 import 'login_screen.dart';
+import '../../../../core/utils/toast_util.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
@@ -67,9 +68,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   Future<void> _handleNextStep() async {
     final otp = _otpController.text.trim();
     if (otp.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter the 6-digit code')),
-      );
+      ToastUtil.showTopToast(context, 'Please enter the 6-digit code', isError: true);
       return;
     }
 
@@ -91,16 +90,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         setState(() => _currentStep = 1);
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'] ?? 'Invalid OTP')),
-          );
+          ToastUtil.showTopToast(context, data['message'] ?? 'Invalid OTP', isError: true);
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Connection error: $e')),
-        );
+        ToastUtil.showTopToast(context, 'Connection error: $e', isError: true);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -113,23 +108,17 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     final confirmPassword = _confirmPasswordController.text;
 
     if (password.isEmpty || confirmPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
-      );
+      ToastUtil.showTopToast(context, 'Please fill all fields', isError: true);
       return;
     }
 
     if (password.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password must be at least 6 characters')),
-      );
+      ToastUtil.showTopToast(context, 'Password must be at least 6 characters', isError: true);
       return;
     }
     
     if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match')),
-      );
+      ToastUtil.showTopToast(context, 'Passwords do not match', isError: true);
       return;
     }
 
@@ -151,9 +140,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
       if (response.statusCode == 200) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'] ?? 'Password reset successfully'), backgroundColor: Colors.green),
-          );
+          ToastUtil.showTopToast(context, data['message'] ?? 'Password reset successfully');
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -162,16 +149,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'] ?? 'Failed to reset password')),
-          );
+          ToastUtil.showTopToast(context, data['message'] ?? 'Failed to reset password', isError: true);
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Connection error: $e')),
-        );
+        ToastUtil.showTopToast(context, 'Connection error: $e', isError: true);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

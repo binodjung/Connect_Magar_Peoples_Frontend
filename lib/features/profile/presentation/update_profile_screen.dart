@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../core/utils/colors.dart';
+import '../../../core/utils/toast_util.dart';
 
 class UpdateProfileScreen extends StatefulWidget {
   final String currentUsername;
@@ -91,9 +92,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
           await prefs.setString('profile_picture', data['profile_picture']);
         }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully!'), backgroundColor: Colors.green),
-        );
+        ToastUtil.showTopToast(context, 'Profile updated successfully!');
         Navigator.pop(context, true); 
       } else {
         // If the server returns HTML (e.g. <!DOCTYPE html>), jsonDecode will fail
@@ -105,9 +104,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
           // If response is not JSON, we just use the status code message
         }
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage)),
-        );
+        ToastUtil.showTopToast(context, errorMessage, isError: true);
       }
     } catch (e) {
       if (!mounted) return;
@@ -115,9 +112,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       if (e is FormatException) {
         errorText = 'Server Error: The server returned an invalid response. Please check your backend connections.';
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorText)),
-      );
+      ToastUtil.showTopToast(context, errorText, isError: true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

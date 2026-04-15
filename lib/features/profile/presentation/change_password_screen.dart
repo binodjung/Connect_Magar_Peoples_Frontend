@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../core/utils/colors.dart';
+import '../../../core/utils/toast_util.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({Key? key}) : super(key: key);
@@ -27,23 +28,17 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     final confirm = _confirmPasswordController.text;
 
     if (current.isEmpty || newPass.isEmpty || confirm.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
-      );
+      ToastUtil.showTopToast(context, 'Please fill all fields', isError: true);
       return;
     }
 
     if (newPass.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password must be at least 6 characters')),
-      );
+      ToastUtil.showTopToast(context, 'Password must be at least 6 characters', isError: true);
       return;
     }
 
     if (newPass != confirm) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('New passwords do not match')),
-      );
+      ToastUtil.showTopToast(context, 'New passwords do not match', isError: true);
       return;
     }
 
@@ -69,21 +64,15 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       if (!mounted) return;
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password changed successfully!'), backgroundColor: Colors.green),
-        );
+        ToastUtil.showTopToast(context, 'Password changed successfully!');
         Navigator.pop(context);
       } else {
         final data = jsonDecode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message'] ?? 'Failed to change password')),
-        );
+        ToastUtil.showTopToast(context, data['message'] ?? 'Failed to change password', isError: true);
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ToastUtil.showTopToast(context, 'Error: $e', isError: true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

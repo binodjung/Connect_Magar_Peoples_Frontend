@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:provider/provider.dart';
 import 'features/authentication/login/presentation/welcome_screen.dart';
 import 'features/home/presentation/home_screen.dart';
-import 'core/theme_provider.dart';
+import 'core/utils/toast_util.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,13 +12,10 @@ void main() async {
   final email = prefs.getString('user_email');
 
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => ThemeProvider(),
-      child: MyApp(
-        isLoggedIn: token != null,
-        username: username,
-        email: email,
-      ),
+    MyApp(
+      isLoggedIn: token != null,
+      username: username,
+      email: email,
     ),
   );
 }
@@ -38,11 +34,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-
     return MaterialApp(
       title: 'Magar Community App',
-      themeMode: themeProvider.themeMode,
+      scaffoldMessengerKey: ToastUtil.messengerKey,
       theme: ThemeData(
         brightness: Brightness.light,
         primarySwatch: Colors.orange,
@@ -52,18 +46,6 @@ class MyApp extends StatelessWidget {
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
           foregroundColor: Color(0xFF8B0000),
-          elevation: 0,
-        ),
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        primarySwatch: Colors.orange,
-        primaryColor: const Color(0xFF8B0000),
-        scaffoldBackgroundColor: const Color(0xFF121212),
-        fontFamily: 'Roboto',
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF121212),
-          foregroundColor: Colors.white,
           elevation: 0,
         ),
       ),

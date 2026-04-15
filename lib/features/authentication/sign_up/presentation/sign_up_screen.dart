@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../login/infrastructure/repository/auth_service.dart';
 import '../../verification/presentation/otp_verification_screen.dart';
 import '../../../../core/utils/colors.dart';
+import '../../../../core/utils/toast_util.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -31,16 +32,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
         _emailController.text.isEmpty || 
         _passwordController.text.isEmpty || 
         _confirmPasswordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
-      );
+      ToastUtil.showTopToast(context, 'Please fill all fields', isError: true);
       return;
     }
 
     if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match')),
-      );
+      ToastUtil.showTopToast(context, 'Passwords do not match', isError: true);
       return;
     }
 
@@ -57,9 +54,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       
       if (!mounted) return;
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Registration Successful! Please check email.'), backgroundColor: Colors.green),
-      );
+      ToastUtil.showTopToast(context, 'Registration Successful! Please check email.');
       
       Navigator.push(
         context,
@@ -70,9 +65,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
-      );
+      ToastUtil.showTopToast(context, e.toString().replaceAll('Exception: ', ''), isError: true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

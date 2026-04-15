@@ -4,6 +4,7 @@ import 'dart:convert';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/utils/colors.dart';
 import 'reset_password_screen.dart';
+import '../../../../core/utils/toast_util.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({Key? key}) : super(key: key);
@@ -54,9 +55,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Future<void> _handleForgotPassword() async {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your email')),
-      );
+      ToastUtil.showTopToast(context, 'Please enter your email', isError: true);
       return;
     }
 
@@ -73,9 +72,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
       if (response.statusCode == 200) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'] ?? 'OTP sent successfully')),
-          );
+          ToastUtil.showTopToast(context, data['message'] ?? 'OTP sent successfully');
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -85,16 +82,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'] ?? 'Failed to send OTP')),
-          );
+          ToastUtil.showTopToast(context, data['message'] ?? 'Failed to send OTP', isError: true);
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text('Connection error: $e')),
-        );
+        ToastUtil.showTopToast(context, 'Connection error: $e', isError: true);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
